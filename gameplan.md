@@ -10,7 +10,6 @@ game plan:
 
 Clean up the track_sim code:
 
-- figure out why it won't run since I moved it to its own folder
 - make a leaderboard that updates in real time
 - clean up UI
   - text overruns
@@ -32,7 +31,7 @@ Setup a potato server:
 
 Stream:
 
-- VOD restrictions means the stream has to reset every 12 hours 
+- VOD restrictions means the stream has to reset every 12 hours
 - overlay so I can warn people when stream is going down
 - leaderboard website
 

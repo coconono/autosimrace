@@ -92,13 +92,13 @@ Top-bar menus provide the same key actions plus save/reset/pause options.
 Configuration files live in `tools/track_sim/etc/`:
 
 - `tracksim.conf`
-	- `window_width`, `window_height`: simulation window size
-	- `tracks_dir`, `cars_dir`: relative directories for track/car files
-	- `default_track`: track file to auto-load on startup (example: `cocorp.track`)
+  - `window_width`, `window_height`: simulation window size
+  - `tracks_dir`, `cars_dir`: relative directories for track/car files
+  - `default_track`: track file to auto-load on startup (example: `cocorp.track`)
 - `trackgen.conf`
-	- `window_width`, `window_height`: generator window size
-	- `tracks_dir`: relative output/input directory for tracks
-	- `lane_width`: default generated track lane width (higher value = wider track)
+  - `window_width`, `window_height`: generator window size
+  - `tracks_dir`: relative output/input directory for tracks
+  - `lane_width`: default generated track lane width (higher value = wider track)
 
 If `default_track` is set but not found, TrackSim starts and shows a status message describing the missing file.
 
