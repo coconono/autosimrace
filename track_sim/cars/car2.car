@@ -1,0 +1,19 @@
+{
+  "name": "car2",
+  "length": 30.0,
+  "width": 10.0,
+  "mass": 600.0,
+  "max_speed": 700.0,
+  "starting_tire_health": 100.0,
+  "starting_fuel": 100.0,
+  "body_color": [
+    40,
+    187,
+    42
+  ],
+  "nose_color": [
+    245,
+    120,
+    120
+  ]
+}

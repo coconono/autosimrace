@@ -1,0 +1,20 @@
+{
+  "name": "Shover",
+  "length": 100.0,
+  "width": 60.0,
+  "mass": 1200.0,
+  "max_speed": 700.0,
+  "line_offset_scale": 1.5,
+  "starting_tire_health": 100.0,
+  "starting_fuel": 100.0,
+  "body_color": [
+    5,
+    42,
+    42
+  ],
+  "nose_color": [
+    255,
+    255,
+    255
+  ]
+}

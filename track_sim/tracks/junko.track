@@ -1,0 +1,307 @@
+{
+  "name": "junko",
+  "outer_pieces": [
+    {
+      "piece_id": "outer_0",
+      "piece_type": "curve",
+      "position": [
+        195.0,
+        179.0
+      ],
+      "orientation": 0,
+      "connects_to": [
+        "outer_7",
+        "outer_1"
+      ]
+    },
+    {
+      "piece_id": "outer_1",
+      "piece_type": "long_straight",
+      "position": [
+        833.0,
+        179.0
+      ],
+      "orientation": 0,
+      "connects_to": [
+        "outer_0",
+        "outer_2"
+      ]
+    },
+    {
+      "piece_id": "outer_2",
+      "piece_type": "curve",
+      "position": [
+        1405.0,
+        179.0
+      ],
+      "orientation": 90,
+      "connects_to": [
+        "outer_1",
+        "outer_3"
+      ]
+    },
+    {
+      "piece_id": "outer_3",
+      "piece_type": "short_straight",
+      "position": [
+        1405.0,
+        464.0
+      ],
+      "orientation": 90,
+      "connects_to": [
+        "outer_2",
+        "outer_4"
+      ]
+    },
+    {
+      "piece_id": "outer_4",
+      "piece_type": "curve",
+      "position": [
+        1405.0,
+        721.0
+      ],
+      "orientation": 180,
+      "connects_to": [
+        "outer_3",
+        "outer_5"
+      ]
+    },
+    {
+      "piece_id": "outer_5",
+      "piece_type": "long_straight",
+      "position": [
+        786.0,
+        721.0
+      ],
+      "orientation": 180,
+      "connects_to": [
+        "outer_4",
+        "outer_6"
+      ]
+    },
+    {
+      "piece_id": "outer_6",
+      "piece_type": "curve",
+      "position": [
+        195.0,
+        721.0
+      ],
+      "orientation": 270,
+      "connects_to": [
+        "outer_5",
+        "outer_7"
+      ]
+    },
+    {
+      "piece_id": "outer_7",
+      "piece_type": "short_straight",
+      "position": [
+        195.0,
+        414.0
+      ],
+      "orientation": 270,
+      "connects_to": [
+        "outer_6",
+        "outer_0"
+      ]
+    }
+  ],
+  "inner_pieces": [
+    {
+      "piece_id": "inner_0",
+      "piece_type": "curve",
+      "position": [
+        258.88380483769606,
+        207.61572084465394
+      ],
+      "orientation": 0,
+      "connects_to": [
+        "inner_7",
+        "inner_1"
+      ]
+    },
+    {
+      "piece_id": "inner_1",
+      "piece_type": "long_barrier",
+      "position": [
+        824.5385183046419,
+        248.4867133164256
+      ],
+      "orientation": 0,
+      "connects_to": [
+        "inner_0",
+        "inner_2"
+      ]
+    },
+    {
+      "piece_id": "inner_2",
+      "piece_type": "curve",
+      "position": [
+        1341.116195162304,
+        207.61572084465394
+      ],
+      "orientation": 90,
+      "connects_to": [
+        "inner_1",
+        "inner_3"
+      ]
+    },
+    {
+      "piece_id": "inner_3",
+      "piece_type": "short_barrier",
+      "position": [
+        1335.0187343656064,
+        462.3805988117661
+      ],
+      "orientation": 90,
+      "connects_to": [
+        "inner_2",
+        "inner_4"
+      ]
+    },
+    {
+      "piece_id": "inner_4",
+      "piece_type": "curve",
+      "position": [
+        1341.116195162304,
+        692.3842791553461
+      ],
+      "orientation": 180,
+      "connects_to": [
+        "inner_3",
+        "inner_5"
+      ]
+    },
+    {
+      "piece_id": "inner_5",
+      "piece_type": "long_barrier",
+      "position": [
+        789.6114202779627,
+        651.0932217622932
+      ],
+      "orientation": 180,
+      "connects_to": [
+        "inner_4",
+        "inner_6"
+      ]
+    },
+    {
+      "piece_id": "inner_6",
+      "piece_type": "curve",
+      "position": [
+        258.88380483769606,
+        692.3842791553461
+      ],
+      "orientation": 270,
+      "connects_to": [
+        "inner_5",
+        "inner_7"
+      ]
+    },
+    {
+      "piece_id": "inner_7",
+      "piece_type": "short_barrier",
+      "position": [
+        264.87640216300065,
+        418.15793467416205
+      ],
+      "orientation": 270,
+      "connects_to": [
+        "inner_6",
+        "inner_0"
+      ]
+    }
+  ],
+  "outer_points": [
+    [
+      195.0,
+      179.0
+    ],
+    [
+      833.0,
+      179.0
+    ],
+    [
+      1405.0,
+      179.0
+    ],
+    [
+      1405.0,
+      464.0
+    ],
+    [
+      1405.0,
+      721.0
+    ],
+    [
+      786.0,
+      721.0
+    ],
+    [
+      195.0,
+      721.0
+    ],
+    [
+      195.0,
+      414.0
+    ]
+  ],
+  "inner_points": [
+    [
+      258.88380483769606,
+      207.61572084465394
+    ],
+    [
+      824.5385183046419,
+      248.4867133164256
+    ],
+    [
+      1341.116195162304,
+      207.61572084465394
+    ],
+    [
+      1335.0187343656064,
+      462.3805988117661
+    ],
+    [
+      1341.116195162304,
+      692.3842791553461
+    ],
+    [
+      789.6114202779627,
+      651.0932217622932
+    ],
+    [
+      258.88380483769606,
+      692.3842791553461
+    ],
+    [
+      264.87640216300065,
+      418.15793467416205
+    ]
+  ],
+  "start_grid": [
+    1335.0187343656064,
+    454.79029940588305,
+    69.9812656343936,
+    16.8
+  ],
+  "metadata": {
+    "seed": 395566,
+    "created_unix": 1783737440,
+    "lane_width": 70.0,
+    "curve_count": 4,
+    "start_grid_index": 3,
+    "car_starts": [
+      {
+        "instance_name": "car2",
+        "car_file": "car2.car",
+        "start_pose": [
+          1371.009367182803,
+          511.190299405883,
+          -1.559500294582827
+        ]
+      }
+    ]
+  }
+}
