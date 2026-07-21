@@ -6,8 +6,9 @@ some outstanding stuff that needs to be done to make the track_sim more polished
 
 cars aren't completing sim races. there is a logic error where the increase of simulation speed is causing the cars to not be able to complete laps. needs fixed. 
 
-## tracksim UI matters
+## tracksim UI improvements
 
+implment pygam menus
 
 text overruns
 - change Increase Waypoint Density to '+ Waypoint'
