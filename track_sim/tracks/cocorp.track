@@ -303,7 +303,7 @@
         ]
       },
       {
-        "instance_name": "car_3",
+        "instance_name": "CloverFPV",
         "car_file": "car.car",
         "start_pose": [
           1031.2,
@@ -312,7 +312,7 @@
         ]
       },
       {
-        "instance_name": "car_4",
+        "instance_name": "piss",
         "car_file": "car.car",
         "start_pose": [
           997.2,
@@ -321,7 +321,7 @@
         ]
       },
       {
-        "instance_name": "car_8",
+        "instance_name": "coconono",
         "car_file": "car.car",
         "start_pose": [
           997.2,
@@ -330,7 +330,7 @@
         ]
       },
       {
-        "instance_name": "car_9",
+        "instance_name": "Yamster",
         "car_file": "car.car",
         "start_pose": [
           962.2,

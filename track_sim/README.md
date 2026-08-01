@@ -95,12 +95,39 @@ Configuration files live in `tools/track_sim/etc/`:
   - `window_width`, `window_height`: simulation window size
   - `tracks_dir`, `cars_dir`: relative directories for track/car files
   - `default_track`: track file to auto-load on startup (example: `cocorp.track`)
+  - `training_races`: number of races to run in Simulate (training) mode
+  - `series_name`: display name for a race series (empty disables series UI)
+  - `series_races`: number of races in the series (0 = use `training_races` / infinite mode)
+  - `series_logo`: path to series logo image (relative to `images/logos/` or absolute path)
 - `trackgen.conf`
   - `window_width`, `window_height`: generator window size
   - `tracks_dir`: relative output/input directory for tracks
   - `lane_width`: default generated track lane width (higher value = wider track)
 
 If `default_track` is set but not found, TrackSim starts and shows a status message describing the missing file.
+
+## Race Series
+
+A race series is a group of races where points accumulate across all races. Points are awarded per race:
+
+- 1st place: 5 points
+- 2nd place: 4 points
+- 3rd place: 3 points
+- 4th place: 2 points
+- Completing the race: 1 point
+
+The series winner is the car with the most points after the configured number of races. Series stats (fastest/slowest lap, points leaders) are tracked across all races in the series.
+
+### Series Logo
+
+The series logo is displayed in the series stats pane. Place logo images in `tools/track_sim/images/logos/` and reference them via the `series_logo` config key.
+
+Logo size requirements:
+
+- Recommended dimensions: 200x200 pixels (square)
+- Maximum dimensions: 240x240 pixels
+- Supported formats: PNG (with alpha), JPG, BMP
+- The logo is scaled to fit within the series stats pane while preserving aspect ratio
 
 ## Race Logs
 

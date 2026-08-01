@@ -22,3 +22,7 @@ def as_int(config: dict[str, str], key: str, fallback: int) -> int:
         return int(config.get(key, fallback))
     except (TypeError, ValueError):
         return fallback
+
+
+def as_str(config: dict[str, str], key: str, fallback: str = "") -> str:
+    return str(config.get(key, fallback))

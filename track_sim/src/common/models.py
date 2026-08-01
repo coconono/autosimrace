@@ -308,6 +308,50 @@ class CarRaceMemory:
 
 
 @dataclass
+class SeriesLapRecord:
+    car_name: str
+    race_number: int
+    lap_time: float
+    lap_number: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "car_name": self.car_name,
+            "race_number": self.race_number,
+            "lap_time": self.lap_time,
+            "lap_number": self.lap_number,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "SeriesLapRecord":
+        return cls(
+            car_name=str(data.get("car_name", "")),
+            race_number=int(data.get("race_number", 0)),
+            lap_time=float(data.get("lap_time", 0.0)),
+            lap_number=int(data.get("lap_number", 0)),
+        )
+
+
+@dataclass
+class CarSeriesStats:
+    points: int = 0
+    races_completed: int = 0
+    fastest_lap: SeriesLapRecord | None = None
+    slowest_lap: SeriesLapRecord | None = None
+
+    def add_points(self, awarded: int) -> None:
+        self.points += max(0, awarded)
+
+    def consider_lap(self, record: SeriesLapRecord) -> None:
+        if record.lap_time <= 0.0:
+            return
+        if self.fastest_lap is None or record.lap_time < self.fastest_lap.lap_time:
+            self.fastest_lap = record
+        if self.slowest_lap is None or record.lap_time > self.slowest_lap.lap_time:
+            self.slowest_lap = record
+
+
+@dataclass
 class CarBehaviorProfile:
     speed_priority: float = 1.0
     lap_improvement_priority: float = 0.9

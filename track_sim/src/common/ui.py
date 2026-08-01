@@ -96,7 +96,8 @@ def draw_dropdown_menus(
             item_rect = pygame.Rect(header.x, y, width, 28)
             hovered = mouse_pos is not None and item_rect.collidepoint(mouse_pos)
             pygame.draw.rect(surface, MENU_ITEM_HOVER if hovered else MENU_ITEM_BG, item_rect)
-            text_surface = font.render(item, True, MENU_TEXT)
+            # Variable-size font so text fits the item width without overrun.
+            text_surface = render_text_fit(item, width - 16, 22, MENU_TEXT, start_size=22, min_size=8)
             surface.blit(text_surface, (item_rect.x + 8, item_rect.y + 6))
             item_rects[(menu_name, item)] = item_rect
             y += 28
@@ -162,3 +163,34 @@ def draw_lines(surface: pygame.Surface, font: pygame.font.Font, lines: list[str]
         text = font.render(line, True, color)
         surface.blit(text, (x, line_y))
         line_y += 24
+
+
+def fit_font_size(text: str, max_width: int, max_height: int, start_size: int = 22, min_size: int = 8) -> int:
+    """Return the largest font size (>= min_size) that fits text within max_width/max_height."""
+    size = start_size
+    while size >= min_size:
+        try:
+            font = create_default_font(size)
+            text_surface = font.render(text, True, (255, 255, 255))
+            if text_surface.get_width() <= max_width and text_surface.get_height() <= max_height:
+                return size
+        except Exception:
+            return min_size
+        size -= 1
+    return min_size
+
+
+def render_text_fit(text: str, max_width: int, max_height: int, color: tuple[int, int, int], start_size: int = 22, min_size: int = 8):
+    """Render text with the largest font size that fits the given bounds."""
+    size = fit_font_size(text, max_width, max_height, start_size=start_size, min_size=min_size)
+    font = create_default_font(size)
+    return font.render(text, True, color)
+
+
+def draw_lines_fit(surface: pygame.Surface, lines: list[str], x: int, y: int, color: tuple[int, int, int], max_width: int, line_height: int = 24, start_size: int = 22, min_size: int = 8) -> None:
+    """Draw lines with variable-size fonts so each line fits within max_width."""
+    line_y = y
+    for line in lines:
+        text_surface = render_text_fit(line, max_width, line_height - 2, color, start_size=start_size, min_size=min_size)
+        surface.blit(text_surface, (x, line_y))
+        line_y += line_height
