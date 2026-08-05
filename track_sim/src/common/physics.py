@@ -15,6 +15,8 @@ def _blend_heading(a: float, b: float, weight_b: float) -> float:
 
 
 def _centerline_points(track: TrackLayout) -> list[tuple[float, float]]:
+    if track._centerline_raw:
+        return track._centerline_raw
     count = min(len(track.outer_points), len(track.inner_points))
     return [
         (
@@ -44,12 +46,10 @@ def _car_surface_samples(state: CarRuntimeState, car: CarConfig, scale: float = 
     c = math.cos(state.heading_radians)
     s = math.sin(state.heading_radians)
 
+    # Center + 4 corners (reduced from 9 points for speed; keeps collision
+    # sensitivity while cutting point-in-polygon checks ~44%).
     local_points = [
         (0.0, 0.0),
-        (half_len, 0.0),
-        (-half_len, 0.0),
-        (0.0, half_wid),
-        (0.0, -half_wid),
         (half_len, half_wid),
         (half_len, -half_wid),
         (-half_len, half_wid),
@@ -76,9 +76,13 @@ def update_car_state(
     throttle: float,
     brake: float,
     steering: float,
-) -> None:
+) -> bool:
+    """Advance the car one physics step.
+
+    Returns True if the car's footprint is on the racing surface after the step.
+    """
     if state.state == "crashed":
-        return
+        return False
 
     accel = throttle * (car.max_speed * 1.8) - brake * (car.max_speed * 1.45)
     state.speed += accel * dt
@@ -155,7 +159,8 @@ def update_car_state(
     state.x += state.vx * dt
     state.y += state.vy * dt
 
-    if not _car_is_on_racing_surface(state, car, track):
+    on_surface = _car_is_on_racing_surface(state, car, track)
+    if not on_surface:
         # Stay where physics put the car; do not snap or teleport back to the track.
         # Off-track penalties are applied over time until the car returns to the surface.
         state.wall_contact_frames += 1
@@ -207,3 +212,6 @@ def update_car_state(
         state.vx = 0.0
         state.vy = 0.0
         state.yaw_rate = 0.0
+        return False
+
+    return on_surface

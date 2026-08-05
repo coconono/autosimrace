@@ -80,7 +80,6 @@ This now starts the track simulation.
 - N: start/reset race
 - A: toggle autonomous/manual mode
 - H: toggle stats panel
-- Arrow keys: drive selected car (manual override)
 - Mouse: select and drag cars when race is not running
 - Dragged cars automatically rotate to match local track direction
 - Q: quit

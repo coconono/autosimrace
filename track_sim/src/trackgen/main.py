@@ -68,7 +68,7 @@ def load_latest_track(tracks_dir: Path):
 
 
 def generate_valid_track(width: int, height: int, lane_width: float):
-    for _ in range(200):
+    for _ in range(500):
         candidate = generate_track(seed=random.randint(1, 999999), width=width, height=height, lane_width=lane_width)
         if validate_track(candidate):
             return candidate

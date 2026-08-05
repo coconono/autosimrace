@@ -3,8 +3,21 @@ from __future__ import annotations
 from .models import BarrierPiece, TrackLayout
 
 
-def point_in_polygon(point: tuple[float, float], polygon: list[tuple[float, float]]) -> bool:
+def point_in_polygon(
+    point: tuple[float, float],
+    polygon: list[tuple[float, float]],
+    bbox: tuple[float, float, float, float] | None = None,
+) -> bool:
+    """Ray-cast point-in-polygon test with an optional cached bounding box.
+
+    When ``bbox`` (min_x, min_y, max_x, max_y) is provided, points clearly
+    outside the box are rejected in O(1) without scanning the polygon.
+    """
     x, y = point
+    if bbox is not None:
+        min_x, min_y, max_x, max_y = bbox
+        if x < min_x or x > max_x or y < min_y or y > max_y:
+            return False
     inside = False
     j = len(polygon) - 1
     for i in range(len(polygon)):
@@ -58,6 +71,6 @@ def validate_track(track: TrackLayout) -> bool:
 
 
 def is_on_racing_surface(point: tuple[float, float], track: TrackLayout) -> bool:
-    in_outer = point_in_polygon(point, track.outer_points)
-    in_inner = point_in_polygon(point, track.inner_points)
+    in_outer = point_in_polygon(point, track.outer_points, track._outer_bbox)
+    in_inner = point_in_polygon(point, track.inner_points, track._inner_bbox)
     return in_outer and not in_inner

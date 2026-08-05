@@ -1,7 +1,17 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
+
+
+def _polygon_bbox(points: list[tuple[float, float]]) -> tuple[float, float, float, float]:
+    """Return (min_x, min_y, max_x, max_y) for a polygon's points."""
+    if not points:
+        return (0.0, 0.0, 0.0, 0.0)
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    return (min(xs), min(ys), max(xs), max(ys))
 
 
 CAR_STATES = (
@@ -155,6 +165,33 @@ class TrackLayout:
     inner_points: list[tuple[float, float]]
     start_grid: tuple[float, float, float, float]
     metadata: dict[str, Any] = field(default_factory=dict)
+    # Cached derived data (populated by prepare()).
+    _centerline_raw: list[tuple[float, float]] = field(default_factory=list, repr=False)
+    _centerline_length: float = 0.0
+    _centerline_smooth: list[tuple[float, float]] | None = field(default=None, repr=False)
+    _outer_bbox: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    _inner_bbox: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+
+    def prepare(self) -> None:
+        """Compute and cache derived track data used by the simulation hot loop."""
+        count = min(len(self.outer_points), len(self.inner_points))
+        self._centerline_raw = [
+            (
+                (self.outer_points[i][0] + self.inner_points[i][0]) * 0.5,
+                (self.outer_points[i][1] + self.inner_points[i][1]) * 0.5,
+            )
+            for i in range(count)
+        ]
+        total = 0.0
+        n = len(self._centerline_raw)
+        for i in range(n):
+            a = self._centerline_raw[i]
+            b = self._centerline_raw[(i + 1) % n]
+            total += math.hypot(b[0] - a[0], b[1] - a[1])
+        self._centerline_length = total
+        self._centerline_smooth = None
+        self._outer_bbox = _polygon_bbox(self.outer_points)
+        self._inner_bbox = _polygon_bbox(self.inner_points)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -202,6 +239,20 @@ class CarConfig:
     starting_fuel: float = 100.0
     body_color: tuple[int, int, int] = (210, 42, 42)
     nose_color: tuple[int, int, int] = (245, 120, 120)
+    # Viewing distance in track units. 0.0 means "auto": use length * 5.0
+    # (the shortest/default viewing distance).
+    view_distance: float = 0.0
+
+    @property
+    def effective_view_distance(self) -> float:
+        """Return the actual viewing distance used by the simulation.
+
+        A value of 0.0 (or any non-positive value) falls back to the default
+        of length * 5.0, which is the shortest viewing distance.
+        """
+        if self.view_distance > 0.0:
+            return self.view_distance
+        return self.length * 5.0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -215,6 +266,7 @@ class CarConfig:
             "starting_fuel": self.starting_fuel,
             "body_color": [self.body_color[0], self.body_color[1], self.body_color[2]],
             "nose_color": [self.nose_color[0], self.nose_color[1], self.nose_color[2]],
+            "view_distance": self.view_distance,
         }
 
     @classmethod
@@ -242,6 +294,7 @@ class CarConfig:
             starting_fuel=float(data.get("starting_fuel", 100.0)),
             body_color=_parse_color("body_color", (210, 42, 42)),
             nose_color=_parse_color("nose_color", (245, 120, 120)),
+            view_distance=max(0.0, float(data.get("view_distance", 0.0))),
         )
 
 

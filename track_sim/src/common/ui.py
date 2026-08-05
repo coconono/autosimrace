@@ -90,10 +90,16 @@ def draw_dropdown_menus(
         if menu_name != open_menu:
             continue
         header = header_rects[menu_name]
-        y = header.bottom + 2
         width = max(header.width, 160)
+        # Opaque panel behind the open menu's items so underlying content
+        # does not show through between rows.
+        panel_h = len(items) * 28 + 4
+        panel = pygame.Rect(header.x, header.bottom + 2, width, panel_h)
+        pygame.draw.rect(surface, MENU_ITEM_BG, panel)
+        pygame.draw.rect(surface, PICKER_BORDER, panel, width=1, border_radius=4)
+        y = panel.y + 2
         for item in items:
-            item_rect = pygame.Rect(header.x, y, width, 28)
+            item_rect = pygame.Rect(panel.x + 1, y, width - 2, 28)
             hovered = mouse_pos is not None and item_rect.collidepoint(mouse_pos)
             pygame.draw.rect(surface, MENU_ITEM_HOVER if hovered else MENU_ITEM_BG, item_rect)
             # Variable-size font so text fits the item width without overrun.

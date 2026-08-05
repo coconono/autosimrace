@@ -145,6 +145,7 @@ def main() -> int:
         ("Mass", "mass", 10.0),
         ("Max Speed", "max_speed", 5.0),
         ("Line Offset Scale", "line_offset_scale", 0.05),
+        ("View Distance", "view_distance", 5.0),
         ("Starting Tire", "starting_tire_health", 1.0),
         ("Starting Fuel", "starting_fuel", 1.0),
         ("Body R", "body_r", 5.0),
@@ -239,6 +240,8 @@ def main() -> int:
                                 value = clamp(value, 40.0, 700.0)
                             elif key == "line_offset_scale":
                                 value = clamp(value, 0.0, 1.5)
+                            elif key == "view_distance":
+                                value = clamp(value, 0.0, 2000.0)
                             elif key in ("starting_tire_health", "starting_fuel"):
                                 value = clamp(value, 1.0, 100.0)
                             setattr(car, key, value)
