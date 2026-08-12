@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# asr-stream-run — foreground FFmpeg → YouTube push, branching on SOURCE.
+#
+# SOURCE=test      → built-in lavfi test pattern + tone (Phase 1 behavior)
+# SOURCE=tracksim  → raw RGBA frames piped from the track_sim grabber FIFO
+#
+# Runs in the foreground (blocks). Used by asr-stream start (backgrounded with
+# a pidfile) and by the asr-stream.service systemd unit.
+set -euo pipefail
+
+CONF="${ASR_CONF:-/etc/autosim/stream.conf}"
+ENVFILE="${ASR_ENV:-/etc/autosim/stream.env}"
+TRACK_DIR="${ASR_TRACK_DIR:-$HOME/track_sim}"
+
+# Defaults (overridden by stream.conf). SRC_W/SRC_H are only a fallback for
+# SOURCE=tracksim; they are normally derived from track_sim's own config below.
+SOURCE=test
+TRACK_FIFO=/tmp/asr_track.fifo
+SRC_W=1600
+SRC_H=900
+WIDTH=1280
+HEIGHT=720
+FPS=30
+# TRACK_FPS is the rate the track_sim grabber delivers frames (paced for real
+# time). FFmpeg must read rawvideo at EXACTLY this rate or the stream timing
+# drifts. Must match ASR_FPS passed to the renderer by asr-track.
+TRACK_FPS=6
+GOP=60
+PRESET=veryfast
+ENCODER=libx264
+# Video bitrate control (Kbps). YouTube recommends ~2500 for 720p30.
+# Capped VBR via -maxrate/-bufsize keeps the bitrate stable around BITRATE.
+BITRATE=2500
+MAXRATE=3500
+BUFSIZE=5000
+
+if [[ -r "$CONF" ]]; then
+  # shellcheck disable=SC1090
+  source "$CONF"
+fi
+if [[ -r "$ENVFILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENVFILE"
+  set +a
+fi
+
+if [[ -z "${RTMP_URL:-}" || -z "${STREAM_KEY:-}" ]]; then
+  echo "error: RTMP_URL / STREAM_KEY not set (check $ENVFILE)" >&2
+  exit 1
+fi
+
+url="${RTMP_URL}/${STREAM_KEY}"
+if [[ "$SOURCE" == "tracksim" ]]; then
+  # rawvideo carries no size header, so FFmpeg must know the exact frame size
+  # (SRC_W x SRC_H) or it desyncs and the stream breaks. The renderer's surface
+  # is window_width/window_height in track_sim's own config, so derive the
+  # capture size from there to guarantee it always matches (operators no longer
+  # need to keep stream.conf's SRC_W/SRC_H in sync).
+  tracksim_conf="${TRACK_DIR}/etc/tracksim.conf"
+  if [[ -r "$tracksim_conf" ]]; then
+    derived_w="$(sed -nE 's/^[[:space:]]*window_width[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$tracksim_conf" | head -n1)"
+    derived_h="$(sed -nE 's/^[[:space:]]*window_height[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$tracksim_conf" | head -n1)"
+    [[ -n "$derived_w" ]] && SRC_W="$derived_w"
+    [[ -n "$derived_h" ]] && SRC_H="$derived_h"
+    # The renderer actually ships a DOWNSCALED frame at capture_width/height
+    # (window size is only a fallback). Capture wins so FFmpeg's SRC matches
+    # the exact bytes the renderer writes.
+    capt_w="$(sed -nE 's/^[[:space:]]*capture_width[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$tracksim_conf" | head -n1)"
+    capt_h="$(sed -nE 's/^[[:space:]]*capture_height[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$tracksim_conf" | head -n1)"
+    [[ -n "$capt_w" ]] && SRC_W="$capt_w"
+    [[ -n "$capt_h" ]] && SRC_H="$capt_h"
+
+    echo "track_sim capture: ${SRC_W}x${SRC_H} (from $tracksim_conf)" >&2
+  fi
+
+  # Ensure the capture FIFO exists (normally created by asr-track / track_sim)
+  # so ffmpeg can open it regardless of start order.
+  if [[ ! -p "$TRACK_FIFO" ]]; then
+    mkdir -p "$(dirname "$TRACK_FIFO")"
+    rm -f "$TRACK_FIFO"
+    mkfifo "$TRACK_FIFO"
+  fi
+
+  # Drain any stale bytes left in the FIFO by a previous encoder generation.
+  #
+  # rawvideo has no in-band framing, so a partial frame left in the pipe buffer
+  # after an encoder is stopped mid-frame (e.g. a source switch via
+  # asr-stream-source, or a crash/restart) is read FIRST by this new encoder.
+  # That stale fragment shifts the explicit byte-count alignment for every
+  # following frame, silently corrupting the whole stream (bad H.264 -> YouTube
+  # drops it). Open read-only non-blocking and discard whatever is buffered so
+  # the encoder starts on a clean frame boundary. Non-blocking means this never
+  # blocks waiting for the renderer and returns immediately when nothing is
+  # buffered.
+  if [[ -p "$TRACK_FIFO" ]]; then
+    python3 - "$TRACK_FIFO" >/dev/null 2>&1 <<'PY' || true
+import os, sys
+fifo = sys.argv[1]
+try:
+    fd = os.open(fifo, os.O_RDONLY | os.O_NONBLOCK)
+except OSError:
+    raise SystemExit(0)
+try:
+    while True:
+        try:
+            chunk = os.read(fd, 65536)
+        except BlockingIOError:
+            break
+        if not chunk:
+            break
+finally:
+    os.close(fd)
+PY
+  fi
+
+  exec ffmpeg -nostdin -y -loglevel warning \
+    -f rawvideo -pix_fmt rgba -s "${SRC_W}x${SRC_H}" -r "$TRACK_FPS" \
+    -i "$TRACK_FIFO" \
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+    -vf "scale=${WIDTH}:${HEIGHT}" \
+    -c:v "$ENCODER" -preset "$PRESET" -pix_fmt yuv420p -g "$GOP" \
+    -b:v "${BITRATE}k" -maxrate "${MAXRATE}k" -bufsize "${BUFSIZE}k" \
+    -c:a aac -b:a 128k \
+    -f flv "$url"
+else
+  exec ffmpeg -nostdin -y -loglevel warning -re \
+    -f lavfi -i "testsrc2=size=${WIDTH}x${HEIGHT}:rate=${FPS}" \
+    -f lavfi -i "sine=frequency=440:sample_rate=44100" \
+    -c:v "$ENCODER" -preset "$PRESET" -pix_fmt yuv420p -g "$GOP" \
+    -b:v "${BITRATE}k" -maxrate "${MAXRATE}k" -bufsize "${BUFSIZE}k" \
+    -c:a aac -b:a 128k \
+    -f flv "$url"
+fi

@@ -1,0 +1,30 @@
+# asr-tracksim.service — headless track_sim renderer + frame grabber.
+# Part of the AutoSim Race server (asr_server). Installed by install-server.sh.
+#
+# Adjust User= and the paths below to match the deploy account if it is not
+# "arse". Runs track_sim in infinite mode with the grabber writing to a FIFO.
+#
+# Primary operator interface is the asr-track CLI (start/stop/status); this
+# unit is an alternative for persistent 24/7 operation.
+
+[Unit]
+Description=AutoSim Race track_sim renderer + frame grabber
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=arse
+WorkingDirectory=/home/arse/track_sim
+Environment=SDL_VIDEODRIVER=dummy
+Environment=SDL_AUDIODRIVER=dummy
+Environment=ASR_STREAM=1
+Environment=TRACKSIM_INFINITE=1
+Environment=ASR_CONF=/etc/autosim/stream.conf
+EnvironmentFile=/etc/autosim/stream.conf
+ExecStart=/home/arse/track_sim/.venv/bin/python -m src.tracksim.main
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

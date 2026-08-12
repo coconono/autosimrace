@@ -1,0 +1,23 @@
+# asr-stream.service — FFmpeg → YouTube stream, branching on SOURCE.
+# Part of the AutoSim Race server (asr_server). Installed by install-server.sh.
+#
+# ExecStart calls asr-stream-run which reads /etc/autosim/stream.conf and
+# /etc/autosim/stream.env and pushes either the test pattern or the track_sim
+# grabber FIFO to YouTube. Switch sources with: asr-stream-source test|tracksim
+# then restart this unit (or use the asr-stream CLI).
+
+[Unit]
+Description=AutoSim Race FFmpeg -> YouTube stream
+After=network-online.target asr-tracksim.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=arse
+Environment=ASR_CONF=/etc/autosim/stream.conf
+ExecStart=/usr/local/bin/asr-stream-run
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

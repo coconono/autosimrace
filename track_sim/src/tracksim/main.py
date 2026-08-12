@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import math
+import os
 import subprocess
+import sys
 import tempfile
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -12,6 +14,7 @@ import pygame
 
 from src.common.config import as_int, as_str, read_simple_conf
 from src.common.geometry import point_in_polygon
+from src.common.streamer import FrameStreamer, resolve_fifo_path
 from src.common.io import load_car, load_track, save_track
 from src.common.models import (
     VISION_X_BINS,
@@ -2277,8 +2280,10 @@ def main() -> int:
     conf = read_simple_conf(
         project_dir / "etc" / "tracksim.conf",
         {
-            "window_width": "1600",
-            "window_height": "900",
+            "window_width": "1280",
+            "window_height": "720",
+            "capture_width": "640",
+            "capture_height": "360",
             "tracks_dir": "tracks",
             "cars_dir": "cars",
             "default_track": "",
@@ -2287,8 +2292,10 @@ def main() -> int:
         },
     )
 
-    width = as_int(conf, "window_width", 1600)
-    height = as_int(conf, "window_height", 900)
+    width = as_int(conf, "window_width", 1280)
+    height = as_int(conf, "window_height", 720)
+    capture_width = max(2, as_int(conf, "capture_width", 640))
+    capture_height = max(2, as_int(conf, "capture_height", 360))
     training_race_target = max(1, as_int(conf, "training_races", 10))
     sim_steps_cap = max(1, as_int(conf, "sim_steps_cap", 8000))
     tracks_dir = project_dir / conf.get("tracks_dir", "tracks")
@@ -2313,6 +2320,19 @@ def main() -> int:
     crash_overlay = _load_crash_overlay(project_dir)
     series_logo = _load_series_logo(project_dir, series_logo_path)
 
+    # Optional headless streaming (ASR_STREAM=1): pipe rendered frames to
+    # FFmpeg via a named FIFO. Only active when explicitly requested.
+    # ASR_FPS (default 0 = no pacing) throttles delivery to a constant rate so
+    # ffmpeg reads at TRACK_FPS and the stream advances in real time.
+    streamer: FrameStreamer | None = None
+    if os.environ.get("ASR_STREAM") == "1":
+        try:
+            _track_fps = float(os.environ.get("ASR_FPS", "0") or "0")
+        except ValueError:
+            _track_fps = 0.0
+        streamer = FrameStreamer(resolve_fifo_path(), fps=_track_fps)
+        streamer.start()
+
     # Pane layout constants (matches RaceSimLayout.drawio.png).
     menu_bar_h = 34
     bottom_stats_h = 220
@@ -2324,7 +2344,7 @@ def main() -> int:
     track = None
     current_track_path: Path | None = None
     sim_cars: list[SimCar] = []
-    selected_car_index: int | None = 0
+    selected_car_index: int | None = None
     racing = False
     paused = False
     race_outcome_saved = True
@@ -2552,6 +2572,32 @@ def main() -> int:
             load_track_into_session(chosen_default_track, prefix="Auto-loaded default track")
         else:
             message = f"Configured default_track not found: {default_track_name}."
+
+    # Auto-start infinite mode when requested via env (TRACKSIM_INFINITE=1) or
+    # CLI flag (--infinite). Reuses the exact code path of the "Race -> Infinite
+    # Mode" menu action so the existing all-wreck reset/hot-reload loop takes over.
+    infinite_requested = "--infinite" in sys.argv[1:] or os.environ.get("TRACKSIM_INFINITE") == "1"
+    if infinite_requested:
+        if track is None:
+            message = "Infinite mode requested but no track is loaded."
+        elif not sim_cars:
+            message = "Infinite mode requested but no cars are loaded."
+        else:
+            for entry in sim_cars:
+                entry.series_stats = CarSeriesStats()
+            series_active = False
+            infinite_mode = True
+            series_completed_races = 0
+            series_race_number = 0
+            if not start_race_session(training=False):
+                infinite_mode = False
+            else:
+                message = "Infinite mode started. Cars will auto-reset on all-wreck."
+
+    # Auto-load above selects the most recently added car. For an unattended
+    # stream, start with NO car selected (a highlighted car + vision overlays
+    # aren't wanted on the live output).
+    selected_car_index = None
 
     running = True
     while running:
@@ -3546,6 +3592,24 @@ def main() -> int:
         pygame.display.flip()
         clock.tick(60)
 
+        if streamer is not None:
+            # Render the UI at the full window size (so panels/layout fit), then
+            # downscale only the captured frame to the capture size before the
+            # FIFO. The capture frame must fit the ~1MiB pipe for corruption-free
+            # raw RGBA delivery. `screen` is already a Surface, so smoothscale it
+            # directly (avoids an extra full-size tobytes/frombuffer each frame -
+            # a big win on the CPU-bound renderer).
+            if capture_width != width or capture_height != height:
+                scaled = pygame.transform.smoothscale(
+                    screen, (capture_width, capture_height)
+                )
+                raw = pygame.image.tobytes(scaled, "RGBA")
+            else:
+                raw = pygame.image.tobytes(screen, "RGBA")
+            streamer.push(raw)
+
+    if streamer is not None:
+        streamer.stop()
     pygame.quit()
     return 0
 

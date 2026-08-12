@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# asr-stream — start/stop/status the FFmpeg → YouTube stream process.
+#
+# Installed to /usr/local/bin/asr-stream by asr_server/install-server.sh.
+set -euo pipefail
+
+CONF="${ASR_CONF:-/etc/autosim/stream.conf}"
+PIDFILE="${ASR_STREAM_PID:-$HOME/.asr/asr-stream.pid}"
+LOG="${ASR_STREAM_LOG:-$HOME/.asr/asr-stream.log}"
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUN_SCRIPT="${ASR_STREAM_RUN:-$BIN_DIR/asr-stream-run}"
+
+is_running() {
+  [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
+}
+
+cmd="${1:-status}"
+case "$cmd" in
+  start)
+    if is_running; then
+      echo "asr-stream already running (pid $(cat "$PIDFILE"))."
+      exit 0
+    fi
+    if [[ ! -x "$RUN_SCRIPT" ]]; then
+      echo "error: $RUN_SCRIPT not found/executable." >&2
+      exit 1
+    fi
+
+    # Determine the active SOURCE.
+    local_source=test
+    if [[ -r "$CONF" ]]; then
+      local_source="$(sed -nE 's/^SOURCE=(.*)$/\1/p' "$CONF" | tr -d '[:space:]')"
+      local_source="${local_source:-test}"
+    fi
+
+    if [[ "$local_source" == "tracksim" ]]; then
+      # The renderer must be feeding the FIFO, or FFmpeg blocks with no frames
+      # and YouTube reports "no encoder input". Ensure it is running.
+      # asr-track start now waits for the renderer to stabilise and fails
+      # loudly (with the log tail) if it exits during boot.
+      if ! "$BIN_DIR/asr-track" status >/dev/null 2>&1; then
+        echo "track_sim renderer not running for SOURCE=tracksim; starting it..."
+        "$BIN_DIR/asr-track" start
+      fi
+      if ! "$BIN_DIR/asr-track" status >/dev/null 2>&1; then
+        echo "error: track_sim renderer failed to start. Check ~/track_sim/logs/stream.log" >&2
+        exit 1
+      fi
+    fi
+
+    mkdir -p "$(dirname "$LOG")" "$(dirname "$PIDFILE")"
+    nohup "$RUN_SCRIPT" >> "$LOG" 2>&1 &
+    echo $! > "$PIDFILE"
+    echo "Started asr-stream (pid $(cat "$PIDFILE")). Log: $LOG"
+    ;;
+  stop)
+    if is_running; then
+      kill "$(cat "$PIDFILE")"
+      rm -f "$PIDFILE"
+      echo "Stopped asr-stream."
+    else
+      echo "asr-stream not running."
+    fi
+    ;;
+  status)
+    if is_running; then
+      echo "asr-stream running (pid $(cat "$PIDFILE"))."
+    else
+      echo "asr-stream stopped."
+    fi
+    ;;
+  *)
+    echo "usage: asr-stream {start|stop|status}" >&2
+    exit 1
+    ;;
+esac

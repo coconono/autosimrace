@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# asr-stream-source — switch the FFmpeg source between test pattern and track_sim.
+#
+#   asr-stream-source            # print current SOURCE
+#   asr-stream-source test       # switch to test pattern
+#   asr-stream-source tracksim   # switch to track_sim output
+#
+# Installed to /usr/local/bin/asr-stream-source by asr_server/install-server.sh.
+set -euo pipefail
+
+CONF="${ASR_CONF:-/etc/autosim/stream.conf}"
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# --- Print current SOURCE ---
+if [[ -z "${1:-}" ]]; then
+  if [[ -f "$CONF" ]] && grep -qE '^SOURCE=.*' "$CONF"; then
+    grep -E '^SOURCE=.*' "$CONF"
+  else
+    echo "SOURCE=test"
+  fi
+  exit 0
+fi
+
+cmd="$1"
+case "$cmd" in
+  test|tracksim) ;;
+  *)
+    echo "usage: asr-stream-source [test|tracksim]" >&2
+    exit 1
+    ;;
+esac
+
+# --- Rewrite SOURCE in stream.conf (create with defaults if missing) ---
+if [[ -f "$CONF" ]]; then
+  sudo sed -i.bak -E 's/^SOURCE=.*/SOURCE='"$cmd"'/' "$CONF"
+  sudo rm -f "$CONF.bak"
+else
+  printf 'SOURCE=%s\n' "$cmd" | sudo tee "$CONF" >/dev/null
+fi
+
+# --- Restart the stream with the new source ---
+"$BIN_DIR/asr-stream" stop >/dev/null 2>&1 || true
+if [[ "$cmd" == "tracksim" ]]; then
+  "$BIN_DIR/asr-track" status >/dev/null 2>&1 || {
+    echo "track_sim stream not running; starting it..."
+    "$BIN_DIR/asr-track" start
+  }
+fi
+"$BIN_DIR/asr-stream" start
+echo "FFmpeg SOURCE switched to $cmd."

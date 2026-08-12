@@ -1,0 +1,39 @@
+# /etc/autosim/stream.conf — AutoSim Race stream source & encode settings.
+# This file is NOT secret (the YouTube stream key lives in /etc/autosim/stream.env).
+#
+# SOURCE selects what FFmpeg ingests:
+#   test     = built-in lavfi test pattern + tone (Phase 1 behavior)
+#   tracksim = raw RGBA frames piped from the running track_sim grabber
+SOURCE=test
+
+# Capture channel used by SOURCE=tracksim (a named pipe).
+TRACK_FIFO=/tmp/asr_track.fifo
+
+# Source surface size the track_sim grabber WRITES to the FIFO. This is NOT the
+# sim's render size (that's track_sim/etc/tracksim.conf window_*, chosen for UI
+# layout); the renderer downscales each frame to capture_width/height before the
+# FIFO so a full RGBA frame fits the ~1MiB pipe. These values are auto-derived
+# from capture_width/capture_height (falling back to window_*) in tracksim.conf.
+# The values below are only a fallback if that file can't be read.
+SRC_W=640
+SRC_H=360
+
+# Encode parameters pushed to YouTube (Pi4-friendly defaults).
+WIDTH=1280
+HEIGHT=720
+FPS=30
+# TRACK_FPS: rate the track_sim grabber delivers frames (paced, real-time).
+# FFmpeg ingests at exactly this rate; must match the renderer's ASR_FPS.
+# Keep it below the renderer's sustainable fps (this Pi sustains ~7) so the
+# stream advances at wall-clock speed and YouTube keeps it live.
+TRACK_FPS=6
+# Keyframe interval in frames (2s at 30fps is recommended for YouTube ingest).
+GOP=60
+PRESET=veryfast
+# libx264 uses software encoding; on a Pi4 switch to h264_v4l2m2m if available.
+ENCODER=libx264
+# Video bitrate (Kbps). YouTube recommends ~2500 for 720p30. MAXRATE/BUFSIZE
+# are a capped-VBR "safety envelope" so the bitrate stays stable.
+BITRATE=2500
+MAXRATE=3500
+BUFSIZE=5000

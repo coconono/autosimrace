@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# asr-track — start/stop/status the track_sim output stream.
+#
+# Starts track_sim headlessly in infinite mode with the frame grabber enabled
+# (ASR_STREAM=1), writing rendered frames to a named FIFO that FFmpeg reads.
+#
+# Installed to /usr/local/bin/asr-track by asr_server/install-server.sh.
+set -euo pipefail
+
+CONF="${ASR_CONF:-/etc/autosim/stream.conf}"
+PIDFILE="${ASR_TRACK_PID:-$HOME/.asr/asr-track.pid}"
+LOG="${ASR_TRACK_LOG:-$HOME/track_sim/logs/stream.log}"
+TRACK_DIR="${ASR_TRACK_DIR:-$HOME/track_sim}"
+
+TRACK_FIFO=/tmp/asr_track.fifo
+if [[ -r "$CONF" ]]; then
+  # shellcheck disable=SC1090
+  source "$CONF"
+fi
+
+is_running() {
+  [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
+}
+
+cmd="${1:-status}"
+case "$cmd" in
+  start)
+    if is_running; then
+      echo "track_sim stream already running (pid $(cat "$PIDFILE"))."
+      exit 0
+    fi
+    if [[ ! -x "$TRACK_DIR/.venv/bin/python" ]]; then
+      echo "error: $TRACK_DIR/.venv/bin/python not found. Run the asr install/deploy first." >&2
+      exit 1
+    fi
+    mkdir -p "$(dirname "$TRACK_FIFO")" "$(dirname "$LOG")" "$(dirname "$PIDFILE")"
+    if [[ ! -p "$TRACK_FIFO" ]]; then
+      rm -f "$TRACK_FIFO"
+      mkfifo "$TRACK_FIFO"
+    fi
+    cd "$TRACK_DIR"
+    SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+    ASR_STREAM=1 ASR_FIFO="$TRACK_FIFO" ASR_FPS="${TRACK_FPS:-6}" TRACKSIM_INFINITE=1 \
+      nohup .venv/bin/python -m src.tracksim.main >> "$LOG" 2>&1 &
+    echo $! > "$PIDFILE"
+    echo "Started track_sim stream (pid $(cat "$PIDFILE")). Log: $LOG"
+
+    # Wait briefly for the renderer to stabilise. If it exits during boot
+    # (missing dependency/asset, headless SDL failure, etc.), surface the log
+    # tail immediately instead of streaming nothing: without this, FFmpeg would
+    # just block forever on the empty FIFO -> "no data" on the channel with no
+    # error anywhere. A slow-but-alive boot is fine; we only fail on an exit.
+    for _ in 1 2 3 4; do
+      if ! is_running; then
+        echo "error: track_sim exited during startup." >&2
+        echo "Last lines of $LOG:" >&2
+        tail -n 25 "$LOG" >&2 2>/dev/null || true
+        rm -f "$PIDFILE"
+        exit 1
+      fi
+      sleep 1
+    done
+    ;;
+  stop)
+    if is_running; then
+      kill "$(cat "$PIDFILE")"
+      rm -f "$PIDFILE"
+      echo "Stopped track_sim stream."
+    else
+      echo "track_sim stream not running."
+    fi
+    ;;
+  status)
+    if is_running; then
+      echo "track_sim stream running (pid $(cat "$PIDFILE"))."
+      exit 0
+    else
+      echo "track_sim stream stopped."
+      exit 1
+    fi
+    ;;
+  *)
+    echo "usage: asr-track {start|stop|status}" >&2
+    exit 1
+    ;;
+esac

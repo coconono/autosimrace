@@ -45,6 +45,14 @@ coverage/
 .env
 .env.*
 *.local
+# Secrets — never commit
+*.key
+*.pem
+*.crt
+laptop.key
+laptop.key.pub
+asr_server/prompts/00-serversetup.prompt.md
+
 
 # Logs and runtime outputs
 *.log
