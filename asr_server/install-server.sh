@@ -26,7 +26,7 @@ python -c "import pygame, PIL; print('deps ok')"
 sudo mkdir -p /etc/autosim
 if [[ ! -f /etc/autosim/stream.env ]]; then
   echo "Creating /etc/autosim/stream.env (edit it with your REAL stream key)."
-  printf 'RTMP_URL=rtmp://a.rtmp.youtube.com/live2\nSTREAM_KEY=YOUR_STREAM_KEY_HERE\n' \
+  printf 'RTMP_URL=rtmp://a.rtmp.youtube.com/live2\nRTMP_BACKUP_URL=rtmp://b.rtmp.youtube.com/live2?backup=1\nSTREAM_KEY=YOUR_STREAM_KEY_HERE\n' \
     | sudo tee /etc/autosim/stream.env >/dev/null
   sudo chmod 600 /etc/autosim/stream.env
 fi
@@ -51,6 +51,7 @@ sudo install -m 0755 "$HOME/asr_server/bin/asr-track" /usr/local/bin/asr-track
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream" /usr/local/bin/asr-stream
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-run" /usr/local/bin/asr-stream-run
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-source" /usr/local/bin/asr-stream-source
+sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-ingest" /usr/local/bin/asr-stream-ingest
 
 # --- systemd units (alternative to the CLI scripts) ---
 sudo install -m 0644 "$HOME/asr_server/etc/asr-tracksim.service" /etc/systemd/system/asr-tracksim.service

@@ -6,6 +6,13 @@
 #   tracksim = raw RGBA frames piped from the running track_sim grabber
 SOURCE=test
 
+# INGEST selects which YouTube ingestion URL FFmpeg pushes to. The URLs
+# themselves are secret-adjacent and live in /etc/autosim/stream.env
+# (RTMP_URL primary, RTMP_BACKUP_URL backup); this non-secret switch just
+# picks which one is used: primary (default) or backup.
+# Switch at runtime with:  asr-stream-ingest primary|backup
+INGEST=primary
+
 # Capture channel used by SOURCE=tracksim (a named pipe).
 TRACK_FIFO=/tmp/asr_track.fifo
 
@@ -24,16 +31,27 @@ HEIGHT=720
 FPS=30
 # TRACK_FPS: rate the track_sim grabber delivers frames (paced, real-time).
 # FFmpeg ingests at exactly this rate; must match the renderer's ASR_FPS.
-# Keep it below the renderer's sustainable fps (this Pi sustains ~7) so the
-# stream advances at wall-clock speed and YouTube keeps it live.
-TRACK_FPS=6
-# Keyframe interval in frames (2s at 30fps is recommended for YouTube ingest).
+# Keep it below the renderer's sustainable fps once the capture resolution is
+# reduced (this Pi can now sustain ~12-15fps at the 640x360 capture) so the
+# stream advances at wall-clock speed with more distinct frames (less choppy).
+# The OUTPUT frame rate is FPS (above), NOT TRACK_FPS: ffmpeg duplicates the
+# slower input frames to emit a constant FPS timeline so the GOP math is correct
+# and YouTube sees a smooth stable frame rate.
+TRACK_FPS=12
+# Keyframe interval in frames (every 2s at 30fps, recommended for YouTube ingest).
 GOP=60
 PRESET=veryfast
-# libx264 uses software encoding; on a Pi4 switch to h264_v4l2m2m if available.
+# Encoder. Prefer the SOFTWARE libx264 encoder: on the Pi4 the h264_v4l2m2m
+# hardware encoder does not honor output frame timing (bad non-monotonic DTS ->
+# YouTube's "current framerate is too high") and ignores the MINRATE floor
+# below (-> "not receiving enough video"). libx264 produces clean CFR and honors
+# MINRATE; it uses ~1 CPU core at 720p30 veryfast, which is fine on the Pi4.
 ENCODER=libx264
 # Video bitrate (Kbps). YouTube recommends ~2500 for 720p30. MAXRATE/BUFSIZE
 # are a capped-VBR "safety envelope" so the bitrate stays stable.
+# MINRATE sets a floor: with few/scene-static frames the VBR can drop too low,
+# triggering "not receiving enough video" on YouTube.
 BITRATE=2500
+MINRATE=2000
 MAXRATE=3500
 BUFSIZE=5000

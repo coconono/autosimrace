@@ -9,6 +9,7 @@ PIDFILE="${ASR_STREAM_PID:-$HOME/.asr/asr-stream.pid}"
 LOG="${ASR_STREAM_LOG:-$HOME/.asr/asr-stream.log}"
 BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_SCRIPT="${ASR_STREAM_RUN:-$BIN_DIR/asr-stream-run}"
+ENVFILE="${ASR_ENV:-/etc/autosim/stream.env}"
 
 is_running() {
   [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
@@ -21,6 +22,40 @@ case "$cmd" in
       echo "asr-stream already running (pid $(cat "$PIDFILE"))."
       exit 0
     fi
+
+    # Guard: refuse to start a second encoder on the SAME ingest URL we are about
+    # to use. This prevents the duplicate-encoder failure seen when the CLI and
+    # the (also installable) asr-stream.service both ran at once — two ffmpeg
+    # processes on one key desyncs the stream and trips YouTube's "not receiving
+    # enough video" buffering. It checks only the active URL (INGEST in
+    # stream.conf), so the intentional primary+backup redundancy from
+    # asr-stream-ingest (encoders on *different* URLs) is still allowed.
+    if [[ -r "$ENVFILE" ]]; then
+      set -a
+      # shellcheck disable=SC1090
+      source "$ENVFILE"
+      set +a
+    fi
+    local_ingest=primary
+    if [[ -r "$CONF" ]]; then
+      local_ingest="$(sed -nE 's/^INGEST=(.*)$/\1/p' "$CONF" | tr -d '[:space:]')"
+      local_ingest="${local_ingest:-primary}"
+    fi
+    target_url=""
+    if [[ "$local_ingest" == "backup" ]]; then
+      target_url="${RTMP_BACKUP_URL:-}"
+    else
+      target_url="${RTMP_URL:-}"
+    fi
+    if [[ -n "$target_url" && -n "${STREAM_KEY:-}" ]]; then
+      if pgrep -ax ffmpeg | grep -Fq "${target_url}/${STREAM_KEY}"; then
+        echo "error: another ffmpeg is already pushing to ${target_url}/${STREAM_KEY}." >&2
+        echo "  Refusing to start a duplicate encoder on the same ingest URL." >&2
+        echo "  If it is stale, clean it up with:  sudo pkill -x ffmpeg" >&2
+        exit 1
+      fi
+    fi
+
     if [[ ! -x "$RUN_SCRIPT" ]]; then
       echo "error: $RUN_SCRIPT not found/executable." >&2
       exit 1

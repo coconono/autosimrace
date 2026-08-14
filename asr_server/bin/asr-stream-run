@@ -16,21 +16,39 @@ TRACK_DIR="${ASR_TRACK_DIR:-$HOME/track_sim}"
 # SOURCE=tracksim; they are normally derived from track_sim's own config below.
 SOURCE=test
 TRACK_FIFO=/tmp/asr_track.fifo
-SRC_W=1600
-SRC_H=900
+SRC_W=640
+SRC_H=360
 WIDTH=1280
 HEIGHT=720
 FPS=30
 # TRACK_FPS is the rate the track_sim grabber delivers frames (paced for real
 # time). FFmpeg must read rawvideo at EXACTLY this rate or the stream timing
 # drifts. Must match ASR_FPS passed to the renderer by asr-track.
-TRACK_FPS=6
+# Kept below the renderer's sustainable fps; the renderer can now push more
+# distinct frames per second at the smaller 640x360 capture size, so a higher
+# TRACK_FPS yields smoother (less choppy) motion on the stream.
+# The OUTPUT frame rate is FPS (below), NOT TRACK_FPS: ffmpeg duplicates the
+# slower input frames to emit a constant FPS timeline so the GOP math below is
+# correct and YouTube sees a smooth, stable frame rate even on a slow renderer.
+TRACK_FPS=12
+# Keyframe interval in frames. With FPS=30 output this is 60/30 = every 2s,
+# which is the recommended range for YouTube (1-4s). If you change FPS, keep
+# GOP = FPS*2 so keyframes stay ~2s apart.
 GOP=60
 PRESET=veryfast
 ENCODER=libx264
+# INGEST selects which YouTube ingestion URL FFmpeg pushes to:
+#   primary = ${RTMP_URL}       (rtmp://a.rtmp.youtube.com/live2)
+#   backup  = ${RTMP_BACKUP_URL} (rtmp://b.rtmp.youtube.com/live2?backup=1)
+INGEST=primary
 # Video bitrate control (Kbps). YouTube recommends ~2500 for 720p30.
-# Capped VBR via -maxrate/-bufsize keeps the bitrate stable around BITRATE.
+# MAXRATE/BUFSIZE are a capped-VBR "safety envelope" so the bitrate stays
+# stable. MINRATE sets a FLOOR: with sparse/slow input (a renderer delivering
+# a single digit to low-teens fps), VBR alone would let the data rate fall well
+# under YouTube's expectation and trigger "not receiving enough video"
+# buffering. Holding the floor keeps the incoming data rate healthy.
 BITRATE=2500
+MINRATE=2000
 MAXRATE=3500
 BUFSIZE=5000
 
@@ -45,12 +63,27 @@ if [[ -r "$ENVFILE" ]]; then
   set +a
 fi
 
+# -preset is a libx264 option. h264_v4l2m2m and other hardware encoders ignore it
+# and only log a "Codec AVOption preset ... not been used" warning. Only pass it
+# through for encoders that actually use it.
+PRESET_ARG=()
+if [[ "$ENCODER" == libx264 ]]; then
+  PRESET_ARG=(-preset "$PRESET")
+fi
+
 if [[ -z "${RTMP_URL:-}" || -z "${STREAM_KEY:-}" ]]; then
   echo "error: RTMP_URL / STREAM_KEY not set (check $ENVFILE)" >&2
   exit 1
 fi
 
 url="${RTMP_URL}/${STREAM_KEY}"
+if [[ "$INGEST" == "backup" ]]; then
+  if [[ -z "${RTMP_BACKUP_URL:-}" ]]; then
+    echo "error: INGEST=backup but RTMP_BACKUP_URL not set (check $ENVFILE)." >&2
+    exit 1
+  fi
+  url="${RTMP_BACKUP_URL}/${STREAM_KEY}"
+fi
 if [[ "$SOURCE" == "tracksim" ]]; then
   # rawvideo carries no size header, so FFmpeg must know the exact frame size
   # (SRC_W x SRC_H) or it desyncs and the stream breaks. The renderer's surface
@@ -114,21 +147,32 @@ finally:
 PY
   fi
 
-  exec ffmpeg -nostdin -y -loglevel warning \
+  # The renderer can briefly stall feeding the FIFO during an infinite-mode race
+  # restart (it reloads car configs). A rawvideo FIFO with nothing to read then
+  # causes a hard output gap -> YouTube's "not receiving enough video". Backdrop
+  # the track on a continuous `color` source so ffmpeg ALWAYS emits 30fps frames;
+  # the overlay holds the last track frame during any stall. -re paces to real-time
+  # (the lavfi color source would otherwise run ahead of the wall clock).
+  exec ffmpeg -nostdin -y -loglevel warning -re \
     -f rawvideo -pix_fmt rgba -s "${SRC_W}x${SRC_H}" -r "$TRACK_FPS" \
     -i "$TRACK_FIFO" \
+    -f lavfi -i "color=black:s=${SRC_W}x${SRC_H}:r=${FPS}" \
     -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
-    -vf "scale=${WIDTH}:${HEIGHT}" \
-    -c:v "$ENCODER" -preset "$PRESET" -pix_fmt yuv420p -g "$GOP" \
-    -b:v "${BITRATE}k" -maxrate "${MAXRATE}k" -bufsize "${BUFSIZE}k" \
+    -filter_complex "[0:v]format=rgba,settb=AVTB[trk];[1:v][trk]overlay=eof_action=pass,scale=${WIDTH}:${HEIGHT}[out]" \
+    -map "[out]" -map 2:a \
+    -c:v "$ENCODER" "${PRESET_ARG[@]}" -pix_fmt yuv420p -g "$GOP" \
+    -b:v "${BITRATE}k" -minrate "${MINRATE}k" -maxrate "${MAXRATE}k" -bufsize "${BUFSIZE}k" \
+    -r "$FPS" -fps_mode cfr \
     -c:a aac -b:a 128k \
     -f flv "$url"
 else
   exec ffmpeg -nostdin -y -loglevel warning -re \
     -f lavfi -i "testsrc2=size=${WIDTH}x${HEIGHT}:rate=${FPS}" \
     -f lavfi -i "sine=frequency=440:sample_rate=44100" \
-    -c:v "$ENCODER" -preset "$PRESET" -pix_fmt yuv420p -g "$GOP" \
-    -b:v "${BITRATE}k" -maxrate "${MAXRATE}k" -bufsize "${BUFSIZE}k" \
+    -r "$FPS" \
+    -c:v "$ENCODER" "${PRESET_ARG[@]}" -pix_fmt yuv420p -g "$GOP" \
+    -b:v "${BITRATE}k" -minrate "${MINRATE}k" -maxrate "${MAXRATE}k" -bufsize "${BUFSIZE}k" \
     -c:a aac -b:a 128k \
+    -fps_mode cfr \
     -f flv "$url"
 fi

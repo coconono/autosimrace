@@ -171,26 +171,61 @@ def draw_lines(surface: pygame.Surface, font: pygame.font.Font, lines: list[str]
         line_y += 24
 
 
+_FIT_SIZE_CACHE: dict[tuple, int] = {}
+_TEXT_CACHE: dict[tuple, pygame.Surface] = {}
+_TEXT_CACHE_ORDER: list[tuple] = []
+_TEXT_CACHE_MAX = 512
+
+
+def _cache_put(store: dict, order: list, key: tuple, value) -> None:
+    """Insert into a bounded cache, evicting the oldest-entry when over the cap."""
+    if key in store:
+        return
+    store[key] = value
+    order.append(key)
+    if len(order) > _TEXT_CACHE_MAX:
+        store.pop(order.pop(0))
+
+
+
 def fit_font_size(text: str, max_width: int, max_height: int, start_size: int = 22, min_size: int = 8) -> int:
-    """Return the largest font size (>= min_size) that fits text within max_width/max_height."""
+    """Return the largest font size (>= min_size) that fits text within max_width/max_height.
+
+    Memoized per (text, bounds, sizes). Text fitting re-creates fonts and re-renders
+    every time it runs, and the stats/leaderboard panes call it every frame, so this
+    was a measurable CPU cost on the Raspberry Pi. Text strings are cached text, so the
+    memoization is exact.
+    """
+    key = (text, max_width, max_height, start_size, min_size)
+    if key in _FIT_SIZE_CACHE:
+        return _FIT_SIZE_CACHE[key]
     size = start_size
     while size >= min_size:
         try:
             font = create_default_font(size)
             text_surface = font.render(text, True, (255, 255, 255))
             if text_surface.get_width() <= max_width and text_surface.get_height() <= max_height:
+                _FIT_SIZE_CACHE[key] = size
                 return size
         except Exception:
+            _FIT_SIZE_CACHE[key] = min_size
             return min_size
         size -= 1
+    _FIT_SIZE_CACHE[key] = min_size
     return min_size
 
 
 def render_text_fit(text: str, max_width: int, max_height: int, color: tuple[int, int, int], start_size: int = 22, min_size: int = 8):
-    """Render text with the largest font size that fits the given bounds."""
+    """Render text with the largest font size that fits the given bounds (cache-backed)."""
+    key = (text, max_width, max_height, color, start_size, min_size)
+    hit = _TEXT_CACHE.get(key)
+    if hit is not None:
+        return hit
     size = fit_font_size(text, max_width, max_height, start_size=start_size, min_size=min_size)
     font = create_default_font(size)
-    return font.render(text, True, color)
+    surf = font.render(text, True, color)
+    _cache_put(_TEXT_CACHE, _TEXT_CACHE_ORDER, key, surf)
+    return surf
 
 
 def draw_lines_fit(surface: pygame.Surface, lines: list[str], x: int, y: int, color: tuple[int, int, int], max_width: int, line_height: int = 24, start_size: int = 22, min_size: int = 8) -> None:

@@ -20,6 +20,7 @@ asr_server/
   bin/
     asr-track            # start/stop/status the track_sim output stream
     asr-stream           # start/stop/status the FFmpeg -> YouTube stream
+    asr-stream-ingest    # switch ingestion URL: primary <-> backup
     asr-stream-run       # foreground FFmpeg push (branches on SOURCE)
     asr-stream-source    # switch FFmpeg source: test <-> tracksim
   etc/
@@ -73,9 +74,15 @@ The YouTube **stream key is secret** and never goes in here — it lives in
 `/etc/autosim/stream.env` (chmod 600, gitignored):
 
 ```ini
-RTMP_URL=rtmp://a.rtmp.youtube.com/live2
+RTMP_URL=rtmp://a.rtmp.youtube.com/live2          # primary ingestion URL
+RTMP_BACKUP_URL=rtmp://b.rtmp.youtube.com/live2?backup=1  # backup ingestion URL
 STREAM_KEY=your-real-key-here
 ```
+
+`RTMP_BACKUP_URL` is the YouTube **backup** ingestion endpoint. If you ever run
+two encoders against the same live stream, YouTube requires one on the primary
+URL and one on the backup URL ("more than one ingestion is using the primary
+URL"). Point this box at the backup with `asr-stream-ingest backup`.
 
 ---
 
@@ -129,6 +136,16 @@ asr-stream-source tracksim   # track_sim output
 Switching rewrites `SOURCE=` in `/etc/autosim/stream.conf`, restarts FFmpeg, and
 (for `tracksim`) auto-starts the renderer if it isn't running.
 
+### Switch the ingestion URL (primary ⇄ backup)
+
+```bash
+asr-stream-ingest            # show current INGEST (primary/backup)
+asr-stream-ingest primary    # push to RTMP_URL  (rtmp://a.rtmp.youtube.com/live2)
+asr-stream-ingest backup     # push to RTMP_BACKUP_URL (rtmp://b.rtmp.youtube.com/live2?backup=1)
+```
+
+Rewrites `INGEST=` in `/etc/autosim/stream.conf` and restarts FFmpeg.
+
 ### Recommended operating sequence
 
 Stream the race:
@@ -161,17 +178,21 @@ ffmpeg -encoders | grep v4l2m2m       # confirm Pi4 hardware encoder (optional)
 
 ## Notes / tuning
 
-- **Resolution & capture:** two separate sizes now. `window_width`/`window_height`
-  in `track_sim/etc/tracksim.conf` is the **render size** the sim UI lays out at
-  (larger = panels/menus fit; repo default 1280x720). `capture_width`/`capture_height`
-  is the **streaming frame size** written to the FIFO (repo default 640x360): the
-  renderer downscales each rendered frame with `pygame.transform.smoothscale`
-  before pushing it, so a full RGBA frame (922 KB) fits the enlarged ~1 MiB pipe
-  buffer (set via `F_SETPIPE_SZ` in `src/common/streamer.py`) — that gives atomic
-  frame delivery and avoids the partial-frame corruption ("corrupt input packet")
-  caused by bigger frames on the 64 KiB default buffer. FFmpeg auto-derives its
-  capture size from `capture_width`/`capture_height` and upscales to 720p. If you
-  raise capture_*, keep `capture_width*height*4 <= ~1 MiB` for reliable delivery.
+- **Resolution & capture:** two separate sizes. `window_width`/`window_height`
+  in `track_sim/etc/tracksim.conf` is the **interactive render size** the UI lays
+  out at (repo default 1280x720). `capture_width`/`capture_height` is the
+  **streaming frame size**: under the headless `ASR_STREAM=1` build the renderer
+  draws directly at this size (no downscale — repo default 640x360) and
+  `asr-stream-run` reads the same value to feed ffmpeg's rawvideo `-s`, then
+  upscales to 720p. **`capture_*` must stay in sync** between these two — the
+  raw RGBA stream has no in-band framing, so a mismatch makes ffmpeg read
+  misaligned frames → a doubled/garbled image. A full 640x360 RGBA frame is
+  ~0.9 MiB; the blocking writer in `src/common/streamer.py` (with the ~1 MiB
+  pipe buffer via `F_SETPIPE_SZ`) handles this by stitching frames across
+  blocking writes. Keeping the capture smaller gives the Pi enough headroom to
+  render and push more distinct frames/sec, which is what actually makes the
+  stream's motion smooth — raise `capture_*` goes the other way (sharper but
+  choppier).
 - **Encoder:** software `libx264 -preset veryfast` by default; on a Pi4 switch
   `ENCODER=h264_v4l2m2m` if available.
 - **Backpressure:** the grabber drops frames, never blocks the simulation.

@@ -40,7 +40,7 @@ case "$cmd" in
     fi
     cd "$TRACK_DIR"
     SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
-    ASR_STREAM=1 ASR_FIFO="$TRACK_FIFO" ASR_FPS="${TRACK_FPS:-6}" TRACKSIM_INFINITE=1 \
+    ASR_STREAM=1 ASR_FIFO="$TRACK_FIFO" ASR_FPS="${TRACK_FPS:-12}" TRACKSIM_INFINITE=1 \
       nohup .venv/bin/python -m src.tracksim.main >> "$LOG" 2>&1 &
     echo $! > "$PIDFILE"
     echo "Started track_sim stream (pid $(cat "$PIDFILE")). Log: $LOG"

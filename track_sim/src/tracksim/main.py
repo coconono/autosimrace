@@ -553,7 +553,7 @@ def _reset_for_race(sim_car: SimCar, track) -> None:
     sim_car.lap_start_time = 0.0
     sim_car.last_lap_damage_checkpoint = 0.0
     sim_car.last_visible_line_point = None
-    _seed_route_target_from_pose(sim_car.route_plan, sim_car.start_pose, track.start_grid)
+    _rebuild_route_for_pose(track, sim_car.route_plan, sim_car.start_pose)
     sim_car.route_last_idx = sim_car.route_plan.active_target_index
     sim_car.route_last_dist = float("inf")
     sim_car.route_stall_time = 0.0
@@ -740,6 +740,109 @@ def _load_series_logo(project_dir: Path, logo_path: str) -> pygame.Surface | Non
     return None
 
 
+def _stream_chrome_signature(sim_cars, series_name, series_completed_races, series_race_target) -> str:
+    """Compact string capturing everything the stream chrome displays.
+
+    It is cheap to rebuild this each frame, and it's used to detect when the cached
+    chrome overlay actually needs re-rendering instead of just blitting the cached copy.
+    """
+    parts: list[str] = [f"{series_name}|{series_completed_races}|{series_race_target}"]
+    for e in sorted(sim_cars, key=lambda e: (e.state.laps, e.state.distance_traveled), reverse=True):
+        parts.append(
+            f"{e.car_number}|{e.instance_name}|{e.state.laps}|{round(e.state.distance_traveled, 0)}|"
+            f"{e.series_stats.points}|{round(e.max_race_speed, 1)}|{round(e.best_lap_seconds, 2)}"
+        )
+    return "\n".join(parts)
+
+
+def _render_stream_chrome(
+    lb_surface,
+    bottom_surface,
+    sim_cars,
+    font,
+    series_name,
+    series_completed_races,
+    series_race_target,
+    series_logo_scaled,
+) -> None:
+    """Fill and draw the leaderboard + bottom-stats panes into their own OPAQUE cached
+    surfaces. Each surface is pane-sized and is blitted beside the track (the track pane
+    is already shrunk to leave room), so the chrome never overlaps the race. Re-rendered
+    only when the standings change."""
+    # Small header font for the narrow/short HUD panes (the main `font` is 22pt,
+    # far too large for the bottom strip at capture size).
+    hfont = create_default_font(12)
+    # --- Leaderboard pane ---
+    lb_surface.fill((24, 28, 34))
+    pygame.draw.rect(lb_surface, (60, 70, 86), lb_surface.get_rect(), width=1)
+    draw_lines(lb_surface, hfont, ["Leaderboard"], 8, 6, (235, 235, 235))
+    lb_y = 34
+    ordered = sorted(sim_cars, key=lambda e: (e.state.laps, e.state.distance_traveled), reverse=True)
+    for pos, entry in enumerate(ordered[:12], start=1):
+        cn = entry.car_number
+        label = f"#{cn} {entry.instance_name[:16]}" if cn > 0 else entry.instance_name[:18]
+        draw_lines_fit(
+            lb_surface,
+            [f"{pos}. {label}  L{entry.state.laps}  {entry.series_stats.points}p"],
+            6,
+            lb_y,
+            (235, 235, 235),
+            max_width=lb_surface.get_width() - 12,
+            line_height=20,
+            start_size=15,
+            min_size=9,
+        )
+        lb_y += 20
+
+    # --- Bottom stats pane ---
+    bw = bottom_surface.get_width()
+    bottom_surface.fill((24, 28, 34))
+    pygame.draw.rect(bottom_surface, (60, 70, 86), bottom_surface.get_rect(), width=1)
+
+    c1_x = 8
+    c1_w = max(80, int(bw * 0.32))
+    c2_x = c1_x + c1_w + 8
+    c2_w = max(90, int(bw * 0.30))
+    c3_x = c2_x + c2_w + 8
+    c3_w = max(80, bw - c3_x - 8)
+
+    rtgt = series_race_target if series_race_target > 0 else "∞"
+
+    # Series stats
+    draw_lines(bottom_surface, hfont, ["Series"], c1_x, 4, (200, 220, 255))
+    ser_lines = [f"{series_name}  R{series_completed_races}/{rtgt}" if series_name
+                 else f"R{series_completed_races}/{rtgt}"]
+    all_fastest = [e.series_stats.fastest_lap for e in sim_cars if e.series_stats.fastest_lap]
+    if all_fastest:
+        fr = min(all_fastest, key=lambda r: r.lap_time)
+        ser_lines.append(f"Fast {fr.lap_time:.2f}s {fr.car_name[:10]}")
+    draw_lines_fit(bottom_surface, ser_lines, c1_x, 22, (225, 225, 225),
+                   max_width=c1_w, line_height=16, start_size=12, min_size=8)
+
+    # Race stats
+    draw_lines(bottom_surface, hfont, ["Race"], c2_x, 4, (200, 220, 255))
+    race_lines: list[str] = []
+    if sim_cars:
+        leader = max(sim_cars, key=lambda e: (e.state.laps, e.state.distance_traveled))
+        race_lines.append(f"Leader {leader.instance_name[:12]} L{leader.state.laps}")
+    top_speed = max((e.max_race_speed for e in sim_cars), default=0.0)
+    race_lines.append(f"Top {top_speed:.0f}")
+    draw_lines_fit(bottom_surface, race_lines, c2_x, 22, (225, 225, 225),
+                   max_width=c2_w, line_height=16, start_size=12, min_size=8)
+
+    # Points leaders
+    draw_lines(bottom_surface, hfont, ["Points"], c3_x, 4, (200, 220, 255))
+    _leaders = sorted(sim_cars, key=lambda e: e.series_stats.points, reverse=True)[:3]
+    pt_lines = [f"{i}. {e.instance_name[:10]} {e.series_stats.points}p" for i, e in enumerate(_leaders, start=1)]
+    draw_lines_fit(bottom_surface, pt_lines, c3_x, 22, (225, 225, 225),
+                   max_width=c3_w, line_height=16, start_size=12, min_size=8)
+
+    # Series logo (bottom-right of the strip), if configured.
+    if series_logo_scaled is not None:
+        bottom_surface.blit(series_logo_scaled, (bw - 84, 6))
+
+
+
 def _wrap_angle(angle: float) -> float:
     while angle > math.pi:
         angle -= 2 * math.pi
@@ -853,6 +956,99 @@ def _build_default_route_plan(track) -> CarRoutePlan:
         for pt in points
     ]
     return CarRoutePlan(permanent_waypoints=waypoints)
+
+
+def _pose_lateral_offset(centerline: list[tuple[float, float]], pose: tuple[float, float, float]) -> float:
+    """Signed lateral distance (px) from a pose to the track centerline.
+
+    Positive means the pose sits to the left of the forward centerline
+    direction. Clamped so a position-derived route stays near the racing
+    surface instead of wandering far off-line when a car is placed at an
+    extreme lateral offset.
+    """
+    if len(centerline) < 2:
+        return 0.0
+    x, y, _heading = pose
+    idx = _nearest_centerline_index(centerline, x, y)
+    pt = centerline[idx]
+    n = len(centerline)
+    next_pt = centerline[(idx + 1) % n]
+    tan_x = next_pt[0] - pt[0]
+    tan_y = next_pt[1] - pt[1]
+    tan_len = math.hypot(tan_x, tan_y)
+    if tan_len <= 1e-6:
+        return 0.0
+    tan_x /= tan_len
+    tan_y /= tan_len
+    # Cross product: positive when the pose is to the left of the forward tangent.
+    from_x = x - pt[0]
+    from_y = y - pt[1]
+    signed = tan_x * from_y - tan_y * from_x
+    return max(-22.0, min(22.0, signed))
+
+
+def _apply_pose_offset_to_route(track, route_plan: CarRoutePlan, pose: tuple[float, float, float]) -> bool:
+    """Offset the route's existing waypoints to follow the racing line the car
+    actually sits on (position-derived lateral offset), then normalize the
+    order and re-seed the active target from the pose. Used after a resample
+    (e.g. + Waypoint / - Waypoint) so the position-derived line is preserved.
+    """
+    waypoints = route_plan.permanent_waypoints
+    if len(waypoints) < 3:
+        return False
+
+    centerline = _build_centerline(track)
+    offset = _pose_lateral_offset(centerline, pose) if centerline else 0.0
+    if abs(offset) >= 1e-4:
+        m = len(waypoints)
+        shifted: list[tuple[float, float]] = []
+        for i, wp in enumerate(waypoints):
+            prev_wp = waypoints[(i - 1) % m]
+            next_wp = waypoints[(i + 1) % m]
+            tan_x = next_wp.x - prev_wp.x
+            tan_y = next_wp.y - prev_wp.y
+            tan_len = math.hypot(tan_x, tan_y)
+            if tan_len <= 1e-6:
+                shifted.append((wp.x, wp.y))
+                continue
+            normal_x = -(tan_y / tan_len)
+            normal_y = tan_x / tan_len
+            shifted.append((wp.x + normal_x * offset, wp.y + normal_y * offset))
+        route_plan.permanent_waypoints = [
+            Waypoint(x=px, y=py, kind="permanent", source="generated")
+            for px, py in shifted
+        ]
+
+    _normalize_route_order(track, route_plan)
+    _seed_route_target_from_pose(route_plan, pose, track.start_grid)
+    return True
+
+
+def _rebuild_route_for_pose(track, route_plan: CarRoutePlan, pose: tuple[float, float, float]) -> bool:
+    """Regenerate a car's waypoint path from a given pose.
+
+    The route is resampled from the track centerline and offset laterally to
+    follow the racing line the car actually sits on (a position-derived
+    offset). This makes moving a car to a new position and resetting/starting
+    actually recalculate the car's waypoints instead of keeping the stale path.
+    """
+    centerline = _build_centerline(track)
+    n = len(centerline)
+    if n <= 0:
+        return False
+
+    target_count = max(20, min(60, n // 3))
+    points = _resample_centerline_points(centerline, target_count=target_count, straight_bias=2.1, turn_floor=0.4)
+    if len(points) < 4:
+        points = centerline
+
+    route_plan.permanent_waypoints = [
+        Waypoint(x=pt[0], y=pt[1], kind="permanent", source="generated")
+        for pt in points
+    ]
+
+    return _apply_pose_offset_to_route(track, route_plan, pose)
+
 
 
 def _nearest_centerline_index(centerline: list[tuple[float, float]], x: float, y: float) -> int:
@@ -1366,6 +1562,43 @@ def autonomous_controls(
         elif mid_center_state in ("barrier", "wreck") and speed_now > 24.0:
             hard_hazard_ahead = True
 
+    # R4 / temporary avoidance waypoint: if a stopped/wrecked hazard blocks the
+    # line to the active permanent waypoint, steer toward a transient surface
+    # point just past the hazard on a clear side so the car commits to driving
+    # around it instead of panicking. Recomputed each frame (runtime-only).
+    def _r4_on_surface(px: float, py: float) -> bool:
+        return point_in_polygon((px, py), track.outer_points, track._outer_bbox) and not point_in_polygon(
+            (px, py), track.inner_points, track._inner_bbox
+        )
+
+    if route_plan is not None and route_plan.active_waypoint() is not None and traffic and not hard_recenter:
+        aw_x, aw_y = target
+        aw_fwd_x = math.cos(state.heading_radians)
+        aw_fwd_y = math.sin(state.heading_radians)
+        blocked_wreck = None
+        for (box, boy, bradius, _bs, bis_wrecked, bis_stopped) in traffic:
+            if not (bis_wrecked or bis_stopped):
+                continue
+            if (box - state.x) * aw_fwd_x + (boy - state.y) * aw_fwd_y <= 0.0:
+                continue
+            if _point_to_segment_distance(box, boy, state.x, state.y, aw_x, aw_y) < bradius + car.width * 0.5 + 6.0:
+                blocked_wreck = (box, boy, bradius)
+                break
+        if blocked_wreck is not None and next_wp is not None:
+            box, boy, bradius = blocked_wreck
+            wside = (box - state.x) * (-aw_fwd_y) + (boy - state.y) * aw_fwd_x
+            pass_sign = -1.0 if wside >= 0.0 else 1.0
+            wlat = max(30.0, bradius * 1.5 + car.width * 0.6)
+            wahead = max(55.0, bradius + car.length)
+            ax = box + aw_fwd_x * wahead + (-aw_fwd_y) * (pass_sign * wlat)
+            ay = boy + aw_fwd_y * wahead + aw_fwd_x * (pass_sign * wlat)
+            if not _r4_on_surface(ax, ay):
+                ax = box + aw_fwd_x * (wahead * 0.5) + (-aw_fwd_y) * (pass_sign * wlat * 0.5)
+                ay = boy + aw_fwd_y * (wahead * 0.5) + aw_fwd_x * (pass_sign * wlat * 0.5)
+            if _r4_on_surface(ax, ay):
+                target = (ax, ay)
+                target_next = (next_wp.x, next_wp.y)
+
     target_heading = math.atan2(target[1] - state.y, target[0] - state.x)
     path_heading = math.atan2(target_next[1] - target[1], target_next[0] - target[0])
     path_forward_x = math.cos(path_heading)
@@ -1530,6 +1763,9 @@ def autonomous_controls(
     nearest_moving_ahead = float("inf")
     moving_ahead_closing = 0.0
     traffic_pressure = 0.0
+    # R1/R2/R4: track pass-commit vs blocked state around stopped hazards.
+    stopped_pass_clear = False   # committed to a clear pass lane around a wreck
+    stopped_blocked = False      # dead-center obstruction, no clear pass on either side
     for ox, oy, other_radius, other_speed, is_wrecked, is_stopped in traffic:
         rel_x = ox - state.x
         rel_y = oy - state.y
@@ -1549,6 +1785,10 @@ def autonomous_controls(
         side = rel_x * (-forward_y) + rel_y * forward_x
         lateral_limit = max(24.0, (car.width + other_radius * (2.4 if stopped_hazard else 1.4)) * 1.0)
         if abs(side) > lateral_limit:
+            # Already beside this obstacle; if it's a stopped hazard,
+            # that implies a pass lane is open (or at least usable).
+            if stopped_hazard:
+                stopped_pass_clear = True
             continue
 
         nearest_ahead = min(nearest_ahead, ahead)
@@ -1578,8 +1818,29 @@ def autonomous_controls(
             base_slow = 1.0 - proximity * (1.1 if stopped_hazard else 0.9)
             slowdown_factor = min(slowdown_factor, max(0.16 if stopped_hazard else 0.22, base_slow))
         if stopped_hazard:
+            # R1: gate emergency brake on whether a clear pass lane is present.
+            # Once the car is committed to a pass side (the _choose_pass_side
+            # probes show a clear path), disable the full-stop order so the
+            # car drives past instead of re-slamming the brakes every frame.
+            pass_side = side_sign
+            pass_clear = False
+            # Check surface probes on the chosen pass side, similar to what
+            # _choose_pass_side's _score does but for the nearest hazard.
+            base_clear = max(14.0, car.width * 0.8 + other_radius * 0.35)
+            probe_dist = min(55.0, max(22.0, ahead * 0.5))
+            for width_mult in (1.0, 1.55):
+                lat = base_clear * width_mult * pass_side
+                px = state.x + forward_x * probe_dist + (-forward_y) * lat
+                py = state.y + forward_y * probe_dist + forward_x * lat
+                if _is_surface(px, py):
+                    pass_clear = True
+                    break
+            if pass_clear:
+                stopped_pass_clear = True
+            else:
+                stopped_blocked = True
             emergency_distance = max(105.0, 74.0 + max(0.0, state.speed) * 0.95 + closing_speed * 2.5)
-            if ahead < emergency_distance and closing_speed > 0.5 and not start_line_commit:
+            if ahead < emergency_distance and closing_speed > 0.5 and not start_line_commit and not pass_clear:
                 emergency_brake = True
         elif ahead < 54.0 and closing_speed > 2.0:
             emergency_brake = True
@@ -1622,6 +1883,12 @@ def autonomous_controls(
             elif near_center == "barrier" and start_line_commit and speed_now < 28.0:
                 emergency_brake = False
                 slowdown_factor = min(slowdown_factor, 0.76)
+            elif stopped_pass_clear:
+                # R1: the car is already committed to a clear pass lane around a
+                # wreck that still shows up in the center band — soften speed and
+                # steer instead of forcing another full emergency stop.
+                emergency_brake = False
+                slowdown_factor = min(slowdown_factor, 0.8)
             else:
                 emergency_brake = True
             left_score = sum(1 for y_bin in VISION_Y_BINS if vision_matrix.get("left", y_bin).state in ("clear", "waypoint"))
@@ -1826,10 +2093,10 @@ def autonomous_controls(
             _set_brake(0.6, "traffic_close")
         if in_turn and traffic_pressure > 0.35 and forward_speed > 22.0:
             _set_brake(0.5, "turn_traffic_pressure")
-        if nearest_stopped_ahead < 190.0 and forward_speed > 24.0:
+        if nearest_stopped_ahead < 190.0 and forward_speed > 24.0 and not stopped_pass_clear:
             approach_pressure = max(0.0, 1.0 - nearest_stopped_ahead / 190.0)
             _set_brake(0.35 + approach_pressure * 0.4, "stopped_hazard_approach")
-        if nearest_stopped_ahead < 115.0 and forward_speed > 18.0:
+        if nearest_stopped_ahead < 115.0 and forward_speed > 18.0 and not stopped_pass_clear:
             _set_brake(0.58, "stopped_hazard_near")
         if wrong_way_recover:
             _set_brake(0.9, "wrong_way_recover")
@@ -1907,6 +2174,42 @@ def autonomous_controls(
     if not line_visible and not emergency_brake:
         steering = max(-1.0, min(1.0, steering * 1.25))
         brake = min(brake, 0.2)
+        if brake <= 0.0:
+            brake_reason = ""
+        # Forward bias when the line is lost: if the car is genuinely on the
+        # racing surface and roughly aimed forward, power out of the lost state
+        # instead of only steering toward a possibly behind/off-track recovery
+        # target while crawling.
+        if (
+            not off_track_like
+            and not off_track
+            and abs(heading_error) < 0.5
+            and not hard_recenter
+        ):
+            throttle = max(throttle, 0.6)
+
+    # R2: committed to a clear pass lane around a wreck — keep a moderate
+    # throttle floor and avoid hard braking so the car actually drives past
+    # the hazard instead of coasting back into the brake band.
+    if stopped_pass_clear and not emergency_brake and not off_track_like and abs(heading_error) < 0.5:
+        throttle = max(throttle, 0.4)
+        brake = min(brake, 0.15)
+        if brake <= 0.0:
+            brake_reason = ""
+
+    # R3: the hazard fully blocks the track ahead (no usable pass lane) and we
+    # are slow and close — creep through at low speed rather than freezing
+    # forever in front of the pileup.
+    if (
+        stopped_blocked
+        and not stopped_pass_clear
+        and abs(state.speed) < 14.0
+        and nearest_stopped_ahead < 120.0
+        and not off_track_like
+    ):
+        emergency_brake = False
+        throttle = max(throttle, 0.2)
+        brake = min(brake, 0.28)
         if brake <= 0.0:
             brake_reason = ""
 
@@ -2040,6 +2343,50 @@ def _find_open_pose(
                 continue
             return (px, py, heading)
     return (bx, by, heading)
+
+
+def _optimize_start_grid(track, sim_cars: list[SimCar]) -> int:
+    """Re-arrange all loaded cars into a tidy starting grid aligned with the
+    racing direction at the start grid zone. Each positioned car's state and
+    start_pose are updated and its waypoints rebuilt from the new placement.
+
+    Returns the number of cars positioned.
+    """
+    if track is None or not sim_cars:
+        return 0
+
+    x, y, w, h = track.start_grid
+    spawn_x = x + w / 2
+    spawn_y = y + h / 2
+    heading = _heading_from_track_position(track, spawn_x, spawn_y)
+    fwd_x = math.cos(heading)
+    fwd_y = math.sin(heading)
+    side_x = -fwd_y
+    side_y = fwd_x
+
+    lanes_per_row = 3
+    lane_slots = (0, -1, 1)
+    positioned = 0
+    for idx, entry in enumerate(sim_cars):
+        car = entry.config
+        lane = lane_slots[idx % lanes_per_row]
+        row = idx // lanes_per_row
+        forward_spacing = max(car.length * 1.7, 86.0)
+        lateral_spacing = max(car.width * 1.35, 34.0)
+        gx = spawn_x - fwd_x * (row * forward_spacing) + side_x * (lane * lateral_spacing)
+        gy = spawn_y - fwd_y * (row * forward_spacing) + side_y * (lane * lateral_spacing)
+        if not _is_on_surface(track, gx, gy) or _car_overlaps_any(sim_cars, idx, gx, gy, car):
+            gx, gy, heading = _find_open_pose(track, sim_cars, idx, car, (gx, gy, heading))
+
+        entry.state.x = gx
+        entry.state.y = gy
+        entry.state.heading_radians = heading
+        entry.start_pose = (gx, gy, heading)
+        _rebuild_route_for_pose(track, entry.route_plan, entry.start_pose)
+        positioned += 1
+
+    return positioned
+
 
 
 def _resolve_car_overlaps(sim_cars: list[SimCar]) -> None:
@@ -2282,8 +2629,10 @@ def main() -> int:
         {
             "window_width": "1280",
             "window_height": "720",
-            "capture_width": "640",
-            "capture_height": "360",
+            "capture_width": "960",
+            "capture_height": "540",
+            "render_fps": "60",
+            "render_fps_streaming": "30",
             "tracks_dir": "tracks",
             "cars_dir": "cars",
             "default_track": "",
@@ -2302,6 +2651,45 @@ def main() -> int:
     cars_dir = project_dir / conf.get("cars_dir", "cars")
     logs_dir = project_dir / "logs"
 
+    # Headless streaming build (ASR_STREAM=1): cut render CPU load while the
+    # 6-7fps stream is pushed to YouTube.
+    #
+    #  * Resolution: render AT the capture size (capture_* = the streaming frame
+    #    size) instead of the interactive window_* size -> ~56% fewer pixels to
+    #    draw. because capture == render here, the per-frame smoothscale
+    #    downscale below is skipped entirely; ffmpeg (asr-stream-run) reads
+    #    capture_* straight from tracksim.conf and upscales to 720p.
+    #  * IMPORTANT: the frame size written to the FIFO must EXACTLY match what
+    #    asr-stream-run derives from tracksim.conf (capture_width/height). They
+    #    share no in-band framing, so any mismatch causes rawvideo desync ->
+    #    a doubled/garbled stream. Keep capture_* as the single source of truth.
+    #  * Frame rate: cap the render loop at streaming tick rate. Real-time
+    #    physics only needs >=20fps (frame_dt is capped at 0.05s, sim_steps=1 in
+    #    non-training mode), so 30fps keeps sim time == wall time. The stream
+    #    itself is paced independently by FrameStreamer (ASR_FPS), so the
+    #    6fps output is unaffected.
+    asr_streaming = os.environ.get("ASR_STREAM") == "1"
+    # stream_show_panes (tracksim.conf): when set AND ASR_STREAM=1, the stream is the
+    # fullscreen track plus a cached leaderboard/bottom-stats overlay instead of a pure
+    # fullscreen track. The overlay is re-rendered only when the standings change, so
+    # enabling it costs almost nothing per frame.
+    _sp = as_str(conf, "stream_show_panes", "0").strip().lower()
+    stream_show_panes = _sp in ("1", "true", "yes", "on")
+    render_fps = max(1, as_int(conf, "render_fps", 60))
+    render_fps_streaming = max(20, as_int(conf, "render_fps_streaming", 30))
+    if asr_streaming:
+        # Render directly at the capture/streaming size (DO NOT change
+        # capture_width/height here - asr-stream-run must read the same value).
+        width = capture_width
+        height = capture_height
+        try:
+            _fps_override = int(float(os.environ.get("ASR_RENDER_FPS", "0") or "0"))
+        except ValueError:
+            _fps_override = 0
+        render_target = max(20, _fps_override or render_fps_streaming)
+    else:
+        render_target = max(1, render_fps)
+
     # Series configuration.
     series_name = as_str(conf, "series_name", "")
     series_race_target = max(0, as_int(conf, "series_races", 0))
@@ -2319,13 +2707,16 @@ def main() -> int:
     font = create_default_font(22)
     crash_overlay = _load_crash_overlay(project_dir)
     series_logo = _load_series_logo(project_dir, series_logo_path)
+    # Scale the series logo once up front (the panes draw it every frame; the old
+    # per-frame smoothscale was pure wasted CPU on the Pi).
+    series_logo_scaled = pygame.transform.smoothscale(series_logo, (80, 80)) if series_logo is not None else None
 
     # Optional headless streaming (ASR_STREAM=1): pipe rendered frames to
     # FFmpeg via a named FIFO. Only active when explicitly requested.
     # ASR_FPS (default 0 = no pacing) throttles delivery to a constant rate so
     # ffmpeg reads at TRACK_FPS and the stream advances in real time.
     streamer: FrameStreamer | None = None
-    if os.environ.get("ASR_STREAM") == "1":
+    if asr_streaming:
         try:
             _track_fps = float(os.environ.get("ASR_FPS", "0") or "0")
         except ValueError:
@@ -2337,9 +2728,23 @@ def main() -> int:
     menu_bar_h = 34
     bottom_stats_h = 220
     leaderboard_w = 280
-    track_pane = pygame.Rect(0, menu_bar_h, width - leaderboard_w, height - menu_bar_h - bottom_stats_h)
-    leaderboard_pane = pygame.Rect(width - leaderboard_w, menu_bar_h, leaderboard_w, height - menu_bar_h - bottom_stats_h)
-    bottom_pane = pygame.Rect(0, height - bottom_stats_h, width, bottom_stats_h)
+    if asr_streaming and stream_show_panes:
+        # Scaled pane layout for the capture size: the track gets its own pane and
+        # the leaderboard + bottom-stats HUD sit beside it (NEVER over the race).
+        _lb_w = max(110, int(280 * width / 1600))
+        _bs_h = max(92, int(220 * height / 900))
+        track_pane = pygame.Rect(0, 0, width - _lb_w, height - _bs_h)
+        leaderboard_pane = pygame.Rect(width - _lb_w, 0, _lb_w, height - _bs_h)
+        bottom_pane = pygame.Rect(0, height - _bs_h, width, _bs_h)
+    elif asr_streaming:
+        # Pure fullscreen track view for the stream.
+        track_pane = pygame.Rect(0, 0, width, height)
+        leaderboard_pane = pygame.Rect(0, 0, 0, 0)
+        bottom_pane = pygame.Rect(0, 0, 0, 0)
+    else:
+        track_pane = pygame.Rect(0, menu_bar_h, width - leaderboard_w, height - menu_bar_h - bottom_stats_h)
+        leaderboard_pane = pygame.Rect(width - leaderboard_w, menu_bar_h, leaderboard_w, height - menu_bar_h - bottom_stats_h)
+        bottom_pane = pygame.Rect(0, height - bottom_stats_h, width, bottom_stats_h)
 
     track = None
     current_track_path: Path | None = None
@@ -2353,6 +2758,8 @@ def main() -> int:
     message = "L load track, C load car, N start/reset race, Del remove selected car, Q quit"
     open_menu: str | None = None
     item_rects: dict[tuple[str, str], pygame.Rect] = {}
+    # Reassigned each frame by draw_dropdown_menus (not in ASR_STREAM mode).
+    header_rects: dict[tuple[str, str], pygame.Rect] = {}
     load_picker_open = False
     load_picker_kind = "track"
     load_picker_files: list[Path] = []
@@ -2375,7 +2782,7 @@ def main() -> int:
     _next_car_number = 1
 
     menus = [
-        ("Start", ["Load Track", "Load Car", "Remove Selected Car", "Save Track", "Quit"]),
+        ("Start", ["Load Track", "Load Car", "Remove Selected Car", "Optimize", "Save Track", "Quit"]),
         ("Race", ["Start Race", "Simulate", "Start Series", "Infinite Mode", "Pause/Resume", "Reset Cars", "+ Waypoint", "- Waypoint", "Quit Race"]),
         ("Stats", ["Toggle Car Stats", "Toggle Race Stats"]),
     ]
@@ -2485,7 +2892,7 @@ def main() -> int:
         sim_cars[inserted_index].state.y = open_pose[1]
         sim_cars[inserted_index].state.heading_radians = open_pose[2]
         sim_cars[inserted_index].start_pose = open_pose
-        _seed_route_target_from_pose(sim_cars[inserted_index].route_plan, open_pose, track.start_grid)
+        _apply_pose_offset_to_route(track, sim_cars[inserted_index].route_plan, open_pose)
         selected_car_index = len(sim_cars) - 1
 
     def load_track_into_session(chosen: Path, prefix: str = "Loaded track") -> None:
@@ -2599,6 +3006,16 @@ def main() -> int:
     # aren't wanted on the live output).
     selected_car_index = None
 
+    # Streaming chrome: cached, OPAQUE leaderboard + bottom-stats panes drawn beside
+    # the track (track_pane is already shrunk to leave room), so they never overlap
+    # the race. Re-rendered only when the standings change; blitted each frame.
+    chrome_sig_prev = ""
+    chrome_lb = None
+    chrome_bottom = None
+    if asr_streaming and stream_show_panes:
+        chrome_lb = pygame.Surface((leaderboard_pane.width, leaderboard_pane.height))
+        chrome_bottom = pygame.Surface((bottom_pane.width, bottom_pane.height))
+
     running = True
     while running:
         # Real-time frame dt (capped). Simulation speed is handled via sub-steps,
@@ -2657,6 +3074,10 @@ def main() -> int:
                         entry.state.heading_radians = _heading_from_track_position(track, nx, ny)
                         entry.start_pose = (entry.state.x, entry.state.y, entry.state.heading_radians)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if dragging_index is not None and not racing and track is not None:
+                    entry = sim_cars[dragging_index]
+                    entry.start_pose = (entry.state.x, entry.state.y, entry.state.heading_radians)
+                    _rebuild_route_for_pose(track, entry.route_plan, entry.start_pose)
                 dragging_index = None
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 # Car stats dropdown interaction.
@@ -2743,6 +3164,15 @@ def main() -> int:
                             message = "Pause race before removing cars."
                         else:
                             remove_selected_car()
+                    elif action.menu == "Start" and action.item == "Optimize":
+                        if track is None or not sim_cars:
+                            message = "Load a track and at least one car first."
+                        elif racing:
+                            message = "Pause race before optimizing the start grid."
+                        else:
+                            count = _optimize_start_grid(track, sim_cars)
+                            message = f"Start grid optimized for {count} cars."
+
                     elif action.menu == "Start" and action.item == "Save Track":
                         if track is None:
                             message = "Load a track before saving."
@@ -2828,7 +3258,7 @@ def main() -> int:
                         else:
                             for entry in sim_cars:
                                 _increase_permanent_waypoints(track, entry.route_plan, increment=waypoint_density_step)
-                                _seed_route_target_from_pose(entry.route_plan, entry.start_pose, track.start_grid)
+                                _apply_pose_offset_to_route(track, entry.route_plan, entry.start_pose)
                             message = f"Increased waypoint density by {waypoint_density_step}."
                     elif action.menu == "Race" and action.item == "- Waypoint":
                         if track is None or not sim_cars:
@@ -2838,7 +3268,7 @@ def main() -> int:
                         else:
                             for entry in sim_cars:
                                 _decrease_permanent_waypoints(track, entry.route_plan, decrement=waypoint_density_step)
-                                _seed_route_target_from_pose(entry.route_plan, entry.start_pose, track.start_grid)
+                                _apply_pose_offset_to_route(track, entry.route_plan, entry.start_pose)
                             message = f"Decreased waypoint density by {waypoint_density_step}."
                     elif action.menu == "Race" and action.item == "Quit Race":
                         racing = False
@@ -2877,180 +3307,180 @@ def main() -> int:
                 pygame.draw.rect(screen, (42, 145, 75), track_pane)
                 track_transform = (1.0, 0.0, 0.0)
 
-            # Leaderboard side pane.
-            pygame.draw.rect(screen, (24, 28, 34), leaderboard_pane)
-            pygame.draw.rect(screen, (60, 70, 86), leaderboard_pane, width=1)
-            draw_lines(screen, font, ["Leaderboard"], leaderboard_pane.x + 10, leaderboard_pane.y + 8, (235, 235, 235))
-            if sim_cars:
-                ordered = sorted(
-                    sim_cars,
-                    key=lambda e: (e.state.laps, e.state.distance_traveled),
-                    reverse=True,
-                )
-                lb_y = leaderboard_pane.y + 38
-                for pos, entry in enumerate(ordered[:12], start=1):
-                    pts = entry.series_stats.points
-                    cn = entry.car_number
-                    car_label = f"#{cn} {entry.instance_name[:14]}" if cn > 0 else entry.instance_name[:16]
-                    lb_line = f"{pos}. {car_label} L{entry.state.laps} {pts}p"
-                    draw_lines_fit(
-                        screen, [lb_line],
-                        leaderboard_pane.x + 8, lb_y,
-                        (235, 235, 235),
-                        max_width=leaderboard_pane.width - 16,
-                        line_height=22, start_size=18, min_size=10,
+            if not asr_streaming:
+                # Leaderboard side pane.
+                pygame.draw.rect(screen, (24, 28, 34), leaderboard_pane)
+                pygame.draw.rect(screen, (60, 70, 86), leaderboard_pane, width=1)
+                draw_lines(screen, font, ["Leaderboard"], leaderboard_pane.x + 10, leaderboard_pane.y + 8, (235, 235, 235))
+                if sim_cars:
+                    ordered = sorted(
+                        sim_cars,
+                        key=lambda e: (e.state.laps, e.state.distance_traveled),
+                        reverse=True,
                     )
-                    lb_y += 22
-
-            # Bottom stats pane background.
-            pygame.draw.rect(screen, (24, 28, 34), bottom_pane)
-            pygame.draw.rect(screen, (60, 70, 86), bottom_pane, width=1)
-
-            # Series stats 1 (left section of bottom pane).
-            ss1_x = bottom_pane.x + 10
-            ss1_y = bottom_pane.y + 8
-            ss1_w = 300
-            draw_lines(screen, font, ["Series Stats"], ss1_x, ss1_y, (200, 220, 255))
-            series_lines = [
-                f"Name: {series_name}" if series_name else "Name: (none)",
-                f"Races: {series_completed_races}/{series_race_target if series_race_target > 0 else '∞'}",
-            ]
-            # Series fastest/slowest lap across all cars.
-            all_fastest = [e.series_stats.fastest_lap for e in sim_cars if e.series_stats.fastest_lap]
-            all_slowest = [e.series_stats.slowest_lap for e in sim_cars if e.series_stats.slowest_lap]
-            if all_fastest:
-                fr = min(all_fastest, key=lambda r: r.lap_time)
-                series_lines.append(f"Fast: {fr.car_name[:12]} R{fr.race_number} {fr.lap_time:.2f}s")
-            else:
-                series_lines.append("Fast: --")
-            if all_slowest:
-                sr = max(all_slowest, key=lambda r: r.lap_time)
-                series_lines.append(f"Slow: {sr.car_name[:12]} R{sr.race_number} {sr.lap_time:.2f}s")
-            else:
-                series_lines.append("Slow: --")
-            draw_lines_fit(screen, series_lines, ss1_x, ss1_y + 28, (225, 225, 225), max_width=ss1_w, line_height=20, start_size=16, min_size=10)
-
-            # Series logo in series stats 1.
-            if series_logo is not None:
-                logo_size = 80
-                logo = pygame.transform.smoothscale(series_logo, (logo_size, logo_size))
-                screen.blit(logo, (ss1_x + ss1_w - logo_size - 4, ss1_y + 4))
-
-            # Series stats 2 (top 5 points leaders).
-            ss2_x = ss1_x + ss1_w + 10
-            ss2_w = 240
-            draw_lines(screen, font, ["Points Leaders"], ss2_x, ss1_y, (200, 220, 255))
-            if sim_cars:
-                leaders = sorted(sim_cars, key=lambda e: e.series_stats.points, reverse=True)[:5]
-                pl_y = ss1_y + 28
-                for rank, entry in enumerate(leaders, start=1):
-                    cn = entry.car_number
-                    car_label = f"#{cn} {entry.instance_name[:12]}" if cn > 0 else entry.instance_name[:14]
-                    pl_line = f"{rank}. {car_label} - {entry.series_stats.points}pts"
-                    draw_lines_fit(screen, [pl_line], ss2_x, pl_y, (225, 225, 225), max_width=ss2_w, line_height=20, start_size=16, min_size=10)
-                    pl_y += 20
-
-            # Race stats 1.
-            if show_bottom_race_stats:
-                rs1_x = ss2_x + ss2_w + 10
-                rs1_w = 260
-                draw_lines(screen, font, ["Race Stats"], rs1_x, ss1_y, (200, 220, 255))
-                leader_entry = max(sim_cars, key=lambda e: (e.state.laps, e.state.distance_traveled)) if sim_cars else None
-                top_speed_entry = max(sim_cars, key=lambda e: e.max_race_speed) if sim_cars else None
-                leader_laps = max((e.state.laps for e in sim_cars), default=0)
-                best, worst = _best_worst_lap(sim_cars)
-                race1_lines = [
-                    f"Leader: {leader_entry.instance_name[:16]}" if leader_entry else "Leader: --",
-                    f"Top Spd: {top_speed_entry.instance_name[:12]} {top_speed_entry.max_race_speed:.0f}" if top_speed_entry else "Top Spd: --",
-                    f"Laps: {leader_laps}",
-                    f"Fast: {best[1]:.2f}s ({best[0][:10]})" if best else "Fast: --",
-                    f"Slow: {worst[1]:.2f}s ({worst[0][:10]})" if worst else "Slow: --",
-                ]
-                draw_lines_fit(screen, race1_lines, rs1_x, ss1_y + 28, (225, 225, 225), max_width=rs1_w, line_height=20, start_size=16, min_size=10)
-
-                # Race stats 2 (drift, crash, contact).
-                rs2_x = rs1_x + rs1_w + 10
-                rs2_w = 280
-                draw_lines(screen, font, ["Race Stats 2"], rs2_x, ss1_y, (200, 220, 255))
-                drift_car = max(sim_cars, key=lambda e: e.max_drift_duration) if sim_cars else None
-                crash_car = min((e for e in sim_cars if e.first_crash_time is not None), key=lambda e: e.first_crash_time, default=None) if sim_cars else None
-                contact_car = max((e for e in sim_cars if e.last_contact_time is not None), key=lambda e: e.last_contact_time, default=None) if sim_cars else None
-                race2_lines = [
-                    f"Longest Drift: {drift_car.instance_name[:12]} {drift_car.max_drift_duration:.1f}s" if drift_car and drift_car.max_drift_duration > 0 else "Longest Drift: --",
-                    f"Quick Crash: {crash_car.instance_name[:12]} {crash_car.first_crash_time:.1f}s" if crash_car else "Quick Crash: --",
-                    f"Last Contact: {contact_car.instance_name[:12]} {contact_car.last_contact_time:.1f}s" if contact_car else "Last Contact: --",
-                ]
-                draw_lines_fit(screen, race2_lines, rs2_x, ss1_y + 28, (225, 225, 225), max_width=rs2_w, line_height=20, start_size=16, min_size=10)
-
-                # Car stats pane (right section of bottom pane).
-                if show_bottom_car_stats and sim_cars:
-                    cs_x = rs2_x + rs2_w + 10
-                    cs_w = bottom_pane.right - cs_x - 10
-                    if cs_w > 100:
-                        stats_index = stats_view_index if stats_view_index < len(sim_cars) else 0
-                        selected = sim_cars[stats_index]
-                        cn = selected.car_number
-                        car_header = f"Car #{cn}: {selected.instance_name[:16]}" if cn > 0 else f"Car: {selected.instance_name[:18]}"
-                        draw_lines(screen, font, [car_header], cs_x, ss1_y + 30, (200, 220, 255))
-                        car_lines = [
-                            f"State: {selected.state.state}",
-                            f"Speed: {selected.state.speed:.1f}",
-                            f"Fuel: {selected.state.fuel:.1f}",
-                            f"Tire: {selected.state.tire_health:.1f}",
-                            f"Damage: {selected.state.damage:.1f}",
-                            f"Laps: {selected.state.laps}",
-                            f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
-                        ]
-                        draw_lines_fit(screen, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
-                        # Draw the dropdown last so its opaque panel covers the
-                        # car stats text beneath it.
-                        stats_dropdown_rect, stats_dropdown_rows, stats_dropdown_scroll = _draw_car_stats_dropdown(
-                            screen,
-                            sim_cars,
-                            stats_view_index,
-                            stats_dropdown_open,
-                            stats_dropdown_scroll,
-                            cs_x,
-                            ss1_y,
-                            cs_w,
-                            bottom_pane,
-                            pygame.mouse.get_pos(),
+                    lb_y = leaderboard_pane.y + 38
+                    for pos, entry in enumerate(ordered[:12], start=1):
+                        pts = entry.series_stats.points
+                        cn = entry.car_number
+                        car_label = f"#{cn} {entry.instance_name[:14]}" if cn > 0 else entry.instance_name[:16]
+                        lb_line = f"{pos}. {car_label} L{entry.state.laps} {pts}p"
+                        draw_lines_fit(
+                            screen, [lb_line],
+                            leaderboard_pane.x + 8, lb_y,
+                            (235, 235, 235),
+                            max_width=leaderboard_pane.width - 16,
+                            line_height=22, start_size=18, min_size=10,
                         )
-            else:
-                # Render car stats without race stats - repositioned
-                if show_bottom_car_stats and sim_cars:
-                    cs_x = ss2_x + ss2_w + 10
-                    cs_w = bottom_pane.right - cs_x - 10
-                    if cs_w > 100:
-                        stats_index = stats_view_index if stats_view_index < len(sim_cars) else 0
-                        selected = sim_cars[stats_index]
-                        cn = selected.car_number
-                        car_header = f"Car #{cn}: {selected.instance_name[:16]}" if cn > 0 else f"Car: {selected.instance_name[:18]}"
-                        draw_lines(screen, font, [car_header], cs_x, ss1_y + 30, (200, 220, 255))
-                        car_lines = [
-                            f"State: {selected.state.state}",
-                            f"Speed: {selected.state.speed:.1f}",
-                            f"Fuel: {selected.state.fuel:.1f}",
-                            f"Tire: {selected.state.tire_health:.1f}",
-                            f"Damage: {selected.state.damage:.1f}",
-                            f"Laps: {selected.state.laps}",
-                            f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
-                        ]
-                        draw_lines_fit(screen, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
-                        # Draw the dropdown last so its opaque panel covers the
-                        # car stats text beneath it.
-                        stats_dropdown_rect, stats_dropdown_rows, stats_dropdown_scroll = _draw_car_stats_dropdown(
-                            screen,
-                            sim_cars,
-                            stats_view_index,
-                            stats_dropdown_open,
-                            stats_dropdown_scroll,
-                            cs_x,
-                            ss1_y,
-                            cs_w,
-                            bottom_pane,
-                            pygame.mouse.get_pos(),
-                        )
+                        lb_y += 22
+
+                # Bottom stats pane background.
+                pygame.draw.rect(screen, (24, 28, 34), bottom_pane)
+                pygame.draw.rect(screen, (60, 70, 86), bottom_pane, width=1)
+
+                # Series stats 1 (left section of bottom pane).
+                ss1_x = bottom_pane.x + 10
+                ss1_y = bottom_pane.y + 8
+                ss1_w = 300
+                draw_lines(screen, font, ["Series Stats"], ss1_x, ss1_y, (200, 220, 255))
+                series_lines = [
+                    f"Name: {series_name}" if series_name else "Name: (none)",
+                    f"Races: {series_completed_races}/{series_race_target if series_race_target > 0 else '∞'}",
+                ]
+                # Series fastest/slowest lap across all cars.
+                all_fastest = [e.series_stats.fastest_lap for e in sim_cars if e.series_stats.fastest_lap]
+                all_slowest = [e.series_stats.slowest_lap for e in sim_cars if e.series_stats.slowest_lap]
+                if all_fastest:
+                    fr = min(all_fastest, key=lambda r: r.lap_time)
+                    series_lines.append(f"Fast: {fr.car_name[:12]} R{fr.race_number} {fr.lap_time:.2f}s")
+                else:
+                    series_lines.append("Fast: --")
+                if all_slowest:
+                    sr = max(all_slowest, key=lambda r: r.lap_time)
+                    series_lines.append(f"Slow: {sr.car_name[:12]} R{sr.race_number} {sr.lap_time:.2f}s")
+                else:
+                    series_lines.append("Slow: --")
+                draw_lines_fit(screen, series_lines, ss1_x, ss1_y + 28, (225, 225, 225), max_width=ss1_w, line_height=20, start_size=16, min_size=10)
+
+                # Series logo in series stats 1.
+                if series_logo_scaled is not None:
+                    logo_size = 80
+                    screen.blit(series_logo_scaled, (ss1_x + ss1_w - logo_size - 4, ss1_y + 4))
+
+                # Series stats 2 (top 5 points leaders).
+                ss2_x = ss1_x + ss1_w + 10
+                ss2_w = 240
+                draw_lines(screen, font, ["Points Leaders"], ss2_x, ss1_y, (200, 220, 255))
+                if sim_cars:
+                    leaders = sorted(sim_cars, key=lambda e: e.series_stats.points, reverse=True)[:5]
+                    pl_y = ss1_y + 28
+                    for rank, entry in enumerate(leaders, start=1):
+                        cn = entry.car_number
+                        car_label = f"#{cn} {entry.instance_name[:12]}" if cn > 0 else entry.instance_name[:14]
+                        pl_line = f"{rank}. {car_label} - {entry.series_stats.points}pts"
+                        draw_lines_fit(screen, [pl_line], ss2_x, pl_y, (225, 225, 225), max_width=ss2_w, line_height=20, start_size=16, min_size=10)
+                        pl_y += 20
+
+                # Race stats 1.
+                if show_bottom_race_stats:
+                    rs1_x = ss2_x + ss2_w + 10
+                    rs1_w = 260
+                    draw_lines(screen, font, ["Race Stats"], rs1_x, ss1_y, (200, 220, 255))
+                    leader_entry = max(sim_cars, key=lambda e: (e.state.laps, e.state.distance_traveled)) if sim_cars else None
+                    top_speed_entry = max(sim_cars, key=lambda e: e.max_race_speed) if sim_cars else None
+                    leader_laps = max((e.state.laps for e in sim_cars), default=0)
+                    best, worst = _best_worst_lap(sim_cars)
+                    race1_lines = [
+                        f"Leader: {leader_entry.instance_name[:16]}" if leader_entry else "Leader: --",
+                        f"Top Spd: {top_speed_entry.instance_name[:12]} {top_speed_entry.max_race_speed:.0f}" if top_speed_entry else "Top Spd: --",
+                        f"Laps: {leader_laps}",
+                        f"Fast: {best[1]:.2f}s ({best[0][:10]})" if best else "Fast: --",
+                        f"Slow: {worst[1]:.2f}s ({worst[0][:10]})" if worst else "Slow: --",
+                    ]
+                    draw_lines_fit(screen, race1_lines, rs1_x, ss1_y + 28, (225, 225, 225), max_width=rs1_w, line_height=20, start_size=16, min_size=10)
+
+                    # Race stats 2 (drift, crash, contact).
+                    rs2_x = rs1_x + rs1_w + 10
+                    rs2_w = 280
+                    draw_lines(screen, font, ["Race Stats 2"], rs2_x, ss1_y, (200, 220, 255))
+                    drift_car = max(sim_cars, key=lambda e: e.max_drift_duration) if sim_cars else None
+                    crash_car = min((e for e in sim_cars if e.first_crash_time is not None), key=lambda e: e.first_crash_time, default=None) if sim_cars else None
+                    contact_car = max((e for e in sim_cars if e.last_contact_time is not None), key=lambda e: e.last_contact_time, default=None) if sim_cars else None
+                    race2_lines = [
+                        f"Longest Drift: {drift_car.instance_name[:12]} {drift_car.max_drift_duration:.1f}s" if drift_car and drift_car.max_drift_duration > 0 else "Longest Drift: --",
+                        f"Quick Crash: {crash_car.instance_name[:12]} {crash_car.first_crash_time:.1f}s" if crash_car else "Quick Crash: --",
+                        f"Last Contact: {contact_car.instance_name[:12]} {contact_car.last_contact_time:.1f}s" if contact_car else "Last Contact: --",
+                    ]
+                    draw_lines_fit(screen, race2_lines, rs2_x, ss1_y + 28, (225, 225, 225), max_width=rs2_w, line_height=20, start_size=16, min_size=10)
+
+                    # Car stats pane (right section of bottom pane).
+                    if show_bottom_car_stats and sim_cars:
+                        cs_x = rs2_x + rs2_w + 10
+                        cs_w = bottom_pane.right - cs_x - 10
+                        if cs_w > 100:
+                            stats_index = stats_view_index if stats_view_index < len(sim_cars) else 0
+                            selected = sim_cars[stats_index]
+                            cn = selected.car_number
+                            car_header = f"Car #{cn}: {selected.instance_name[:16]}" if cn > 0 else f"Car: {selected.instance_name[:18]}"
+                            draw_lines(screen, font, [car_header], cs_x, ss1_y + 30, (200, 220, 255))
+                            car_lines = [
+                                f"State: {selected.state.state}",
+                                f"Speed: {selected.state.speed:.1f}",
+                                f"Fuel: {selected.state.fuel:.1f}",
+                                f"Tire: {selected.state.tire_health:.1f}",
+                                f"Damage: {selected.state.damage:.1f}",
+                                f"Laps: {selected.state.laps}",
+                                f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
+                            ]
+                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
+                            # Draw the dropdown last so its opaque panel covers the
+                            # car stats text beneath it.
+                            stats_dropdown_rect, stats_dropdown_rows, stats_dropdown_scroll = _draw_car_stats_dropdown(
+                                screen,
+                                sim_cars,
+                                stats_view_index,
+                                stats_dropdown_open,
+                                stats_dropdown_scroll,
+                                cs_x,
+                                ss1_y,
+                                cs_w,
+                                bottom_pane,
+                                pygame.mouse.get_pos(),
+                            )
+                else:
+                    # Render car stats without race stats - repositioned
+                    if show_bottom_car_stats and sim_cars:
+                        cs_x = ss2_x + ss2_w + 10
+                        cs_w = bottom_pane.right - cs_x - 10
+                        if cs_w > 100:
+                            stats_index = stats_view_index if stats_view_index < len(sim_cars) else 0
+                            selected = sim_cars[stats_index]
+                            cn = selected.car_number
+                            car_header = f"Car #{cn}: {selected.instance_name[:16]}" if cn > 0 else f"Car: {selected.instance_name[:18]}"
+                            draw_lines(screen, font, [car_header], cs_x, ss1_y + 30, (200, 220, 255))
+                            car_lines = [
+                                f"State: {selected.state.state}",
+                                f"Speed: {selected.state.speed:.1f}",
+                                f"Fuel: {selected.state.fuel:.1f}",
+                                f"Tire: {selected.state.tire_health:.1f}",
+                                f"Damage: {selected.state.damage:.1f}",
+                                f"Laps: {selected.state.laps}",
+                                f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
+                            ]
+                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
+                            # Draw the dropdown last so its opaque panel covers the
+                            # car stats text beneath it.
+                            stats_dropdown_rect, stats_dropdown_rows, stats_dropdown_scroll = _draw_car_stats_dropdown(
+                                screen,
+                                sim_cars,
+                                stats_view_index,
+                                stats_dropdown_open,
+                                stats_dropdown_scroll,
+                                cs_x,
+                                ss1_y,
+                                cs_w,
+                                bottom_pane,
+                                pygame.mouse.get_pos(),
+                            )
 
         if racing and not paused and track is not None and sim_cars:
             all_stopped = True
@@ -3283,9 +3713,16 @@ def main() -> int:
                         and len(entry.route_plan.permanent_waypoints) > 1
                         and state.state != "crashed"
                     ):
-                        entry.route_plan.active_target_index = (
-                            entry.route_plan.active_target_index + 1
-                        ) % len(entry.route_plan.permanent_waypoints)
+                        # Re-seed the route from the car's current pose so the
+                        # active target becomes the first waypoint actually ahead
+                        # of the car's nose, instead of only stepping +1 (which
+                        # can keep a displaced/spun-out car circling the same
+                        # local waypoints instead of driving forward).
+                        _seed_route_target_from_pose(
+                            entry.route_plan,
+                            (state.x, state.y, state.heading_radians),
+                            track.start_grid,
+                        )
                         forced_wp = entry.route_plan.active_waypoint()
                         if forced_wp is not None:
                             entry.route_last_dist = math.hypot(forced_wp.x - state.x, forced_wp.y - state.y)
@@ -3570,27 +4007,44 @@ def main() -> int:
             ]
             draw_lines(screen, font, overlay_lines, panel.x + 24, panel.y + 20, (232, 240, 246))
 
-        draw_lines(screen, font, [message], 24, height - 40, (245, 245, 245))
+        if not asr_streaming:
+            draw_lines(screen, font, [message], 24, height - 40, (245, 245, 245))
 
-        if load_picker_open:
-            picker_title = "Load Car" if load_picker_kind == "car" else "Load Track"
-            _, load_picker_rows = draw_file_picker(
+            if load_picker_open:
+                picker_title = "Load Car" if load_picker_kind == "car" else "Load Track"
+                _, load_picker_rows = draw_file_picker(
+                    screen,
+                    font,
+                    picker_title,
+                    [p.name for p in load_picker_files],
+                    pygame.mouse.get_pos(),
+                )
+
+            header_rects, item_rects = draw_dropdown_menus(
                 screen,
                 font,
-                picker_title,
-                [p.name for p in load_picker_files],
+                menus,
+                open_menu,
                 pygame.mouse.get_pos(),
             )
-
-        header_rects, item_rects = draw_dropdown_menus(
-            screen,
-            font,
-            menus,
-            open_menu,
-            pygame.mouse.get_pos(),
-        )
+        if chrome_lb is not None:
+            sig = _stream_chrome_signature(sim_cars, series_name, series_completed_races, series_race_target)
+            if sig != chrome_sig_prev:
+                _render_stream_chrome(
+                    chrome_lb,
+                    chrome_bottom,
+                    sim_cars,
+                    font,
+                    series_name,
+                    series_completed_races,
+                    series_race_target,
+                    series_logo_scaled,
+                )
+                chrome_sig_prev = sig
+            screen.blit(chrome_lb, leaderboard_pane.topleft)
+            screen.blit(chrome_bottom, bottom_pane.topleft)
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(render_target)
 
         if streamer is not None:
             # Render the UI at the full window size (so panels/layout fit), then

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# asr-stream-ingest — switch which YouTube ingestion URL FFmpeg pushes to.
+#
+#   asr-stream-ingest                 # print current INGEST
+#   asr-stream-ingest primary         # push to the primary URL (RTMP_URL)
+#   asr-stream-ingest backup          # push to the backup URL (RTMP_BACKUP_URL)
+#
+# Use primary/backup to keep two encoders on different ingestion URLs (see the
+# YouTube "more than one ingestion is using the primary URL" warning).
+# Installed to /usr/local/bin/asr-stream-ingest by asr_server/install-server.sh.
+set -euo pipefail
+
+CONF="${ASR_CONF:-/etc/autosim/stream.conf}"
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# --- Print current INGEST ---
+if [[ -z "${1:-}" ]]; then
+  if [[ -f "$CONF" ]] && grep -qE '^INGEST=.*' "$CONF"; then
+    grep -E '^INGEST=.*' "$CONF"
+  else
+    echo "INGEST=primary"
+  fi
+  exit 0
+fi
+
+cmd="$1"
+case "$cmd" in
+  primary|backup) ;;
+  *)
+    echo "usage: asr-stream-ingest [primary|backup]" >&2
+    exit 1
+    ;;
+esac
+
+# --- Rewrite INGEST in stream.conf (create with defaults if missing) ---
+if [[ -f "$CONF" ]]; then
+  if grep -qE '^INGEST=.*' "$CONF"; then
+    sudo sed -i.bak -E 's/^INGEST=.*/INGEST='"$cmd"'/' "$CONF"
+    sudo rm -f "$CONF.bak"
+  else
+    printf 'INGEST=%s\n' "$cmd" | sudo tee -a "$CONF" >/dev/null
+  fi
+else
+  printf 'INGEST=%s\n' "$cmd" | sudo tee "$CONF" >/dev/null
+fi
+
+# --- Restart the stream with the new ingestion URL ---
+"$BIN_DIR/asr-stream" stop >/dev/null 2>&1 || true
+"$BIN_DIR/asr-stream" start
+echo "FFmpeg INGEST switched to $cmd."
