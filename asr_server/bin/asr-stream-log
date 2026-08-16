@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""asr-stream-log — supervised, timestamped, capped logger for the stream.
+
+Wraps asr-stream-run (which finalises into ffmpeg) and writes its output to a
+log file, prefixing every line with a local timestamp and retaining only the
+100 most-recent entries.
+
+Usage:
+    asr-stream-log <run-script> <log-file>
+
+It is started in the background by `asr-stream start`, which records THIS
+process's pid in the stream pidfile. On SIGTERM/SIGINT it forwards the signal
+to the streaming child (ffmpeg) and waits for it to exit, so `asr-stream stop`
+tears down ffmpeg exactly like the original `exec ffmpeg` setup did.
+"""
+import os
+import signal
+import subprocess
+import sys
+import threading
+import time
+from collections import deque
+
+# Number of most-recent entries retained in the log file.
+MAX_LINES = 100
+# Grace period after a stop signal before we SIGKILL the streaming process.
+STOP_GRACE = 8
+
+
+def log_path(arg):
+    """Absolute path of the log file (resolved from ~ if relative)."""
+    return os.path.abspath(os.path.expanduser(arg))
+
+
+def read_seed(path):
+    """Return the last MAX_LINES lines present in an existing log (as-is)."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            return deque(fh.read().splitlines(), maxlen=MAX_LINES)
+    except OSError:
+        return deque(maxlen=MAX_LINES)
+
+
+def write_all(path, lines):
+    """Atomically-write the given lines as the full log file."""
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))
+        fh.write("\n")
+
+
+def stamp(line):
+    return "{} {}".format(time.strftime("%Y-%m-%d %H:%M:%S"), line)
+
+
+def main(argv):
+    if len(argv) != 3:
+        print(
+            "usage: asr-stream-log <run-script> <log-file>",
+            file=sys.stderr,
+        )
+        return 2
+
+    run_script = argv[1]
+    path = log_path(argv[2])
+
+    if not os.path.exists(run_script):
+        # Record the failure in the log so it is not lost (stderr goes to
+        # /dev/null under nohup in asr-stream start).
+        lines = read_seed(path)
+        lines.append(stamp("error: run script not found: {}".format(run_script)))
+        write_all(path, lines)
+        return 1
+
+    # Preserve the last MAX_LINES from any previous run, then keep appending.
+    lines = read_seed(path)
+
+    child = subprocess.Popen(
+        [run_script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+        bufsize=1,
+        start_new_session=True,
+    )
+
+    # Output is drained by a background thread, NOT the main thread. The main
+    # thread waits on the child and so stays free to run signal handlers; if we
+    # blocked it in readline() instead, a long-running stream that writes
+    # nothing would never run our SIGTERM handler and `asr-stream stop` would
+    # leak ffmpeg.
+    write_lock = threading.Lock()
+    stop = threading.Event()
+
+    def append_and_flush(msg):
+        with write_lock:
+            lines.append(stamp(msg))
+            write_all(path, lines)
+
+    # Serialised writer shared by the reader thread and the main thread.
+    def reader_loop():
+        for raw in iter(child.stdout.readline, ""):
+            text = raw.rstrip("\n")
+            with write_lock:
+                lines.append(stamp(text))
+                write_all(path, lines)
+            if stop.is_set():
+                break
+
+    def signal_group(signum):
+        # The child runs in its own process group, so this also reaches any
+        # descendants (e.g. a renderer/shell the encoder may spawn), preventing
+        # an orphan from holding the output pipe open and stalling shutdown.
+        try:
+            os.killpg(child.pid, signum)
+        except (ProcessLookupError, PermissionError):
+            pass
+
+    def on_signal(signum, _frame):
+        stop.set()
+        signal_group(signum)
+
+    signal.signal(signal.SIGTERM, on_signal)
+    signal.signal(signal.SIGINT, on_signal)
+
+    append_and_flush("=== asr-stream started (pid {}) ===".format(child.pid))
+    reader = threading.Thread(target=reader_loop, daemon=True)
+    reader.start()
+
+    # Wait for the streaming child. After a stop signal we give it a short
+    # grace period to shut down cleanly (important so ffmpeg tells YouTube the
+    # stream ended), then SIGKILL the whole process group.
+    rc = None
+    while True:
+        try:
+            rc = child.wait(timeout=STOP_GRACE)
+            break
+        except subprocess.TimeoutExpired:
+            if stop.is_set():
+                signal_group(signal.SIGKILL)
+                child.wait()
+                rc = child.returncode
+                break
+
+    reader.join(timeout=5)
+    append_and_flush(
+        "=== asr-stream stopped (child exit {}) ===".format(
+            rc if rc is not None else -1
+        )
+    )
+
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv))
+    except Exception as exc:  # pragma: no cover - last-resort logging
+        try:
+            path = log_path(sys.argv[2]) if len(sys.argv) > 2 else None
+            if path:
+                err = read_seed(path)
+                err.append(stamp("asr-stream-log error: {!r}".format(exc)))
+                write_all(path, err)
+        except Exception:
+            pass
+        sys.exit(1)

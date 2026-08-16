@@ -50,6 +50,7 @@ sudo chmod 640 /etc/autosim/stream.conf
 sudo install -m 0755 "$HOME/asr_server/bin/asr-track" /usr/local/bin/asr-track
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream" /usr/local/bin/asr-stream
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-run" /usr/local/bin/asr-stream-run
+sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-log" /usr/local/bin/asr-stream-log
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-source" /usr/local/bin/asr-stream-source
 sudo install -m 0755 "$HOME/asr_server/bin/asr-stream-ingest" /usr/local/bin/asr-stream-ingest
 

@@ -13,7 +13,10 @@ SOURCE=test
 # Switch at runtime with:  asr-stream-ingest primary|backup
 INGEST=primary
 
-# Capture channel used by SOURCE=tracksim (a named pipe).
+# Capture channel used by SOURCE=tracksim. When stream_show_panes=1 (tracksim.conf),
+# the HUD compositor process (src.common.asr_stream_hud) reads the track-region FIFO
+# (/tmp/asr_track_region.fifo) and writes the composed full frame to this FIFO for
+# ffmpeg. When panes are off, track_sim writes this FIFO directly.
 TRACK_FIFO=/tmp/asr_track.fifo
 
 # Source surface size the track_sim grabber WRITES to the FIFO. This is NOT the

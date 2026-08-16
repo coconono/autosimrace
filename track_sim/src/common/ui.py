@@ -235,3 +235,35 @@ def draw_lines_fit(surface: pygame.Surface, lines: list[str], x: int, y: int, co
         text_surface = render_text_fit(line, max_width, line_height - 2, color, start_size=start_size, min_size=min_size)
         surface.blit(text_surface, (x, line_y))
         line_y += line_height
+
+
+def draw_lines_fit_segmented(
+    surface: pygame.Surface,
+    lines: list[tuple[str, str, str]],
+    x: int,
+    y: int,
+    color: tuple[int, int, int],
+    accent_color: tuple[int, int, int],
+    max_width: int,
+    line_height: int = 24,
+    start_size: int = 22,
+    min_size: int = 8,
+) -> None:
+    """Draw lines with variable-size fonts where the middle segment of each line
+    is rendered in `accent_color` while the surrounding segments use `color`.
+
+    Each entry is a ``(prefix, accent, suffix)`` triple; ``prefix+accent+suffix``
+    reproduces the original whole line so font sizing matches `draw_lines_fit`.
+    """
+    line_y = y
+    for prefix, accent, suffix in lines:
+        full = f"{prefix}{accent}{suffix}"
+        size = fit_font_size(full, max_width, line_height - 2, start_size=start_size, min_size=min_size)
+        font = create_default_font(size)
+        seg_cursor = x
+        for seg_text, seg_color in ((prefix, color), (accent, accent_color), (suffix, color)):
+            pre = font.render(seg_text, True, seg_color)
+            surface.blit(pre, (seg_cursor, line_y))
+            seg_cursor += pre.get_width()
+        line_y += line_height
+

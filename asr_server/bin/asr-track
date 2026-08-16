@@ -2,17 +2,28 @@
 # asr-track — start/stop/status the track_sim output stream.
 #
 # Starts track_sim headlessly in infinite mode with the frame grabber enabled
-# (ASR_STREAM=1), writing rendered frames to a named FIFO that FFmpeg reads.
+# (ASR_STREAM=1). When the stream shows the leaderboard/bottom-stats HUD
+# (stream_show_panes=1 in tracksim.conf), the HUD is rendered and composed by a
+# SEPARATE process (src.common.asr_stream_hud) so that work runs on its own core:
+#
+#   track_sim  --track-region-->  asr_stream_hud  --full frame-->  ffmpeg (asr-stream)
+#
+# When stream_show_panes=0, track_sim writes the full frame straight to the ffmpeg
+# FIFO in a single process (the original behaviour).
 #
 # Installed to /usr/local/bin/asr-track by asr_server/install-server.sh.
 set -euo pipefail
 
 CONF="${ASR_CONF:-/etc/autosim/stream.conf}"
 PIDFILE="${ASR_TRACK_PID:-$HOME/.asr/asr-track.pid}"
+HUD_PIDFILE="${ASR_HUD_PID:-$HOME/.asr/asr-stream-hud.pid}"
 LOG="${ASR_TRACK_LOG:-$HOME/track_sim/logs/stream.log}"
+HUD_LOG="${ASR_HUD_LOG:-$HOME/track_sim/logs/stream-hud.log}"
 TRACK_DIR="${ASR_TRACK_DIR:-$HOME/track_sim}"
-
+TRACKS_CONF="${ASR_TRACKS_CONF:-$TRACK_DIR/etc/tracksim.conf}"
 TRACK_FIFO=/tmp/asr_track.fifo
+REGION_FIFO=/tmp/asr_track_region.fifo
+HUD_SOCK=/tmp/asr_hud.sock
 if [[ -r "$CONF" ]]; then
   # shellcheck disable=SC1090
   source "$CONF"
@@ -20,6 +31,21 @@ fi
 
 is_running() {
   [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
+}
+
+hud_running() {
+  [[ -f "$HUD_PIDFILE" ]] && kill -0 "$(cat "$HUD_PIDFILE")" 2>/dev/null
+}
+
+stream_uses_hud() {
+  # stream_show_panes=1 <=> a separate HUD compositor process is needed.
+  if [[ -r "$TRACKS_CONF" ]]; then
+    local val
+    val="$(sed -nE 's/^[[:space:]]*stream_show_panes[[:space:]]*=[[:space:]]*([01]).*/\1/p' "$TRACKS_CONF" | head -n1)"
+    [[ "$val" == "1" ]]
+    return $?
+  fi
+  return 1
 }
 
 cmd="${1:-status}"
@@ -33,29 +59,54 @@ case "$cmd" in
       echo "error: $TRACK_DIR/.venv/bin/python not found. Run the asr install/deploy first." >&2
       exit 1
     fi
-    mkdir -p "$(dirname "$TRACK_FIFO")" "$(dirname "$LOG")" "$(dirname "$PIDFILE")"
+    mkdir -p "$(dirname "$TRACK_FIFO")" "$(dirname "$LOG")" "$(dirname "$HUD_LOG")" "$(dirname "$PIDFILE")" "$(dirname "$HUD_PIDFILE")"
     if [[ ! -p "$TRACK_FIFO" ]]; then
       rm -f "$TRACK_FIFO"
       mkfifo "$TRACK_FIFO"
     fi
     cd "$TRACK_DIR"
+
+    if stream_uses_hud; then
+      if [[ ! -p "$REGION_FIFO" ]]; then
+        rm -f "$REGION_FIFO"
+        mkfifo "$REGION_FIFO"
+      fi
+      SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+      ASR_HUD_IN_FIFO="$REGION_FIFO" ASR_HUD_OUT_FIFO="$TRACK_FIFO" \
+      ASR_HUD_SOCK="$HUD_SOCK" ASR_TRACK_CONF="$TRACKS_CONF" \
+        nohup .venv/bin/python -m src.common.asr_stream_hud >> "$HUD_LOG" 2>&1 &
+      echo $! > "$HUD_PIDFILE"
+      RENDER_FIFO="$REGION_FIFO"
+    else
+      RENDER_FIFO="$TRACK_FIFO"
+    fi
+
     SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
-    ASR_STREAM=1 ASR_FIFO="$TRACK_FIFO" ASR_FPS="${TRACK_FPS:-12}" TRACKSIM_INFINITE=1 \
+    ASR_STREAM=1 ASR_FIFO="$RENDER_FIFO" ASR_FPS="${TRACK_FPS:-12}" TRACKSIM_INFINITE=1 \
+    ASR_HUD_SOCK="$HUD_SOCK" \
       nohup .venv/bin/python -m src.tracksim.main >> "$LOG" 2>&1 &
     echo $! > "$PIDFILE"
-    echo "Started track_sim stream (pid $(cat "$PIDFILE")). Log: $LOG"
+    if stream_uses_hud; then
+      echo "Started track_sim stream (pid $(cat "$PIDFILE"), hud pid $(cat "$HUD_PIDFILE")). Log: $LOG"
+    else
+      echo "Started track_sim stream (pid $(cat "$PIDFILE")). Log: $LOG"
+    fi
 
     # Wait briefly for the renderer to stabilise. If it exits during boot
     # (missing dependency/asset, headless SDL failure, etc.), surface the log
-    # tail immediately instead of streaming nothing: without this, FFmpeg would
-    # just block forever on the empty FIFO -> "no data" on the channel with no
-    # error anywhere. A slow-but-alive boot is fine; we only fail on an exit.
+    # tail immediately instead of streaming nothing.
     for _ in 1 2 3 4; do
       if ! is_running; then
         echo "error: track_sim exited during startup." >&2
         echo "Last lines of $LOG:" >&2
         tail -n 25 "$LOG" >&2 2>/dev/null || true
         rm -f "$PIDFILE"
+        if stream_uses_hud && hud_running; then
+          kill "$(cat "$HUD_PIDFILE")" 2>/dev/null
+          echo "Last lines of $HUD_LOG:" >&2
+          tail -n 25 "$HUD_LOG" >&2 2>/dev/null || true
+          rm -f "$HUD_PIDFILE"
+        fi
         exit 1
       fi
       sleep 1
@@ -65,19 +116,26 @@ case "$cmd" in
     if is_running; then
       kill "$(cat "$PIDFILE")"
       rm -f "$PIDFILE"
-      echo "Stopped track_sim stream."
-    else
-      echo "track_sim stream not running."
     fi
+    # Stop the renderer first so the HUD process sees EOF and exits cleanly.
+    sleep 1
+    if hud_running; then
+      kill "$(cat "$HUD_PIDFILE")" 2>/dev/null
+      rm -f "$HUD_PIDFILE"
+    fi
+    echo "Stopped track_sim stream."
     ;;
   status)
     if is_running; then
-      echo "track_sim stream running (pid $(cat "$PIDFILE"))."
+      if hud_running; then
+        echo "track_sim stream running (pid $(cat "$PIDFILE"), hud pid $(cat "$HUD_PIDFILE"))."
+      else
+        echo "track_sim stream running (pid $(cat "$PIDFILE"))."
+      fi
       exit 0
-    else
-      echo "track_sim stream stopped."
-      exit 1
     fi
+    echo "track_sim stream stopped."
+    exit 1
     ;;
   *)
     echo "usage: asr-track {start|stop|status}" >&2

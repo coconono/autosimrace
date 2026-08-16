@@ -40,21 +40,28 @@ asr_server/
 - `TRACKSIM_INFINITE=1` (or `--infinite`) — auto-starts infinite mode on launch:
   loads the configured default track + its cars, then auto-restarts a new race
   whenever all cars wreck (the existing in-app loop).
-- `ASR_STREAM=1` — pipes each rendered frame (`RGBA`) to a named FIFO
-  (`/tmp/asr_track.fifo` by default) read by FFmpeg. A background thread writes
-  the FIFO with backpressure, so a missing reader never stalls the sim.
+- `ASR_STREAM=1` — pipes each rendered frame (`RGBA`) to a named FIFO. With the HUD
+  shown (`stream_show_panes=1`) the leaderboard/bottom-stats panes are rendered and
+  composed by a **separate process** (`src.common.asr_stream_hud`) so that work runs on
+  its own core; the renderer then only ships the track-region pixels.
 
 So the pipeline is:
 
 ```
 track_sim (headless, infinite, ASR_STREAM=1)
-        |  raw RGBA frames
+        |  track-region RGBA            + HUD snapshot (datagram)
+        v                               v
+/tmp/asr_track_region.fifo       asr_stream_hud (compositor) -> renders panes, composes
+        |                                                        full frame
         v
 /tmp/asr_track.fifo
         |  ffmpeg reads FIFO, scales to 720p, H.264
         v
 YouTube (RTMP)
 ```
+
+With `stream_show_panes=0` (pure fullscreen track) the HUD compositor is skipped and
+`track_sim` writes full frames straight to `/tmp/asr_track.fifo` (one process).
 
 `/etc/autosim/stream.conf` holds the **source selection** and encode parameters:
 
@@ -112,7 +119,8 @@ This rsyncs `track_sim/` (excluding `.venv`, `.git`, caches, logs) and the
 ### Start/stop the track_sim output stream
 
 ```bash
-asr-track start      # headless track_sim, infinite mode, grabber -> FIFO
+asr-track start      # headless track_sim, infinite mode -> track-region FIFO
+                     #   (+ auto-starts the separate HUD compositor when stream_show_panes=1)
 asr-track stop
 asr-track status
 ```
@@ -169,9 +177,10 @@ asr-stream start
 ## Logs & verification
 
 ```bash
-tail -f ~/track_sim/logs/stream.log   # sim / grabber output
-tail -f ~/.asr/asr-stream.log       # ffmpeg output
-ffmpeg -encoders | grep v4l2m2m       # confirm Pi4 hardware encoder (optional)
+tail -f ~/track_sim/logs/stream.log       # sim / grabber (renderer) output
+tail -f ~/track_sim/logs/stream-hud.log   # HUD compositor output (when stream_show_panes=1)
+tail -f ~/.asr/asr-stream.log             # ffmpeg output (timestamped, keeps last 100 lines)
+ffmpeg -encoders | grep v4l2m2m           # confirm Pi4 hardware encoder (optional)
 ```
 
 ---
@@ -180,19 +189,21 @@ ffmpeg -encoders | grep v4l2m2m       # confirm Pi4 hardware encoder (optional)
 
 - **Resolution & capture:** two separate sizes. `window_width`/`window_height`
   in `track_sim/etc/tracksim.conf` is the **interactive render size** the UI lays
-  out at (repo default 1280x720). `capture_width`/`capture_height` is the
-  **streaming frame size**: under the headless `ASR_STREAM=1` build the renderer
-  draws directly at this size (no downscale — repo default 640x360) and
-  `asr-stream-run` reads the same value to feed ffmpeg's rawvideo `-s`, then
-  upscales to 720p. **`capture_*` must stay in sync** between these two — the
-  raw RGBA stream has no in-band framing, so a mismatch makes ffmpeg read
-  misaligned frames → a doubled/garbled image. A full 640x360 RGBA frame is
-  ~0.9 MiB; the blocking writer in `src/common/streamer.py` (with the ~1 MiB
-  pipe buffer via `F_SETPIPE_SZ`) handles this by stitching frames across
-  blocking writes. Keeping the capture smaller gives the Pi enough headroom to
-  render and push more distinct frames/sec, which is what actually makes the
-  stream's motion smooth — raise `capture_*` goes the other way (sharper but
-  choppier).
+  out at (1280x720). `capture_width`/`capture_height` is the **streaming frame
+  size**: under the headless `ASR_STREAM=1` build the renderer draws directly at
+  this size (repo default 960x540) and `asr-stream-run` reads the same value to
+  feed ffmpeg's rawvideo `-s`, then **upscales to 720p**. That upscale is why we
+  can drop the capture below 720p to cut the renderer's pixel work (~45% fewer
+  pixels at 960x540; ~75% at 640x360). **`capture_*` must stay in sync** between
+  the renderer and `asr-stream-run` — the raw RGBA stream has no in-band framing,
+  so a mismatch makes ffmpeg read misaligned frames → a doubled/garbled image.
+  Because the leaderboard/bottom-stats panes are sized in absolute capture pixels
+  (`stream_leaderboard_width` / `stream_bottom_stats_height`), lowering the capture
+  without scaling those sizes makes the HUD dominate the frame — the repo scales
+  them proportionally (0.75x at 960x540). Keeping the capture smaller gives the Pi
+  enough headroom to render and push more distinct frames/sec, which is what
+  actually makes the stream's motion smooth — raise `capture_*` goes the other way
+  (sharper but choppier).
 - **Encoder:** software `libx264 -preset veryfast` by default; on a Pi4 switch
   `ENCODER=h264_v4l2m2m` if available.
 - **Backpressure:** the grabber drops frames, never blocks the simulation.

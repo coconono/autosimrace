@@ -9,6 +9,7 @@ PIDFILE="${ASR_STREAM_PID:-$HOME/.asr/asr-stream.pid}"
 LOG="${ASR_STREAM_LOG:-$HOME/.asr/asr-stream.log}"
 BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_SCRIPT="${ASR_STREAM_RUN:-$BIN_DIR/asr-stream-run}"
+LOG_HELPER="${ASR_STREAM_LOG_HELPER:-$BIN_DIR/asr-stream-log}"
 ENVFILE="${ASR_ENV:-/etc/autosim/stream.env}"
 
 is_running() {
@@ -60,6 +61,10 @@ case "$cmd" in
       echo "error: $RUN_SCRIPT not found/executable." >&2
       exit 1
     fi
+    if [[ ! -x "$LOG_HELPER" ]]; then
+      echo "error: $LOG_HELPER not found/executable." >&2
+      exit 1
+    fi
 
     # Determine the active SOURCE.
     local_source=test
@@ -84,7 +89,10 @@ case "$cmd" in
     fi
 
     mkdir -p "$(dirname "$LOG")" "$(dirname "$PIDFILE")"
-    nohup "$RUN_SCRIPT" >> "$LOG" 2>&1 &
+    # Run the stream under a supervised logger: it prefaces every line with a
+    # timestamp and trims the log to the 100 most-recent entries. The pidfile
+    # records THIS logger's pid; on stop it forwards the signal to ffmpeg.
+    nohup "$LOG_HELPER" "$RUN_SCRIPT" "$LOG" >/dev/null 2>&1 &
     echo $! > "$PIDFILE"
     echo "Started asr-stream (pid $(cat "$PIDFILE")). Log: $LOG"
     ;;

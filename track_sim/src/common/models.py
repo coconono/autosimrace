@@ -320,6 +320,14 @@ class CarRuntimeState:
     wall_contact_frames: int = 0
     distance_traveled: float = 0.0
     last_lap_distance: float = 0.0
+    # Distance moved in the nominal forward direction only (reverse/wrong-way
+    # movement is excluded). Used for placement so a backwards car can't rank
+    # high by driving backward.
+    forward_distance: float = 0.0
+    # Net progress around the track loop (laps * lap_len + in-lap arc from the
+    # finish line, in the car's travel direction). Used as the live race
+    # position metric so rankings update on actual overtakes, not path length.
+    net_progress: float = 0.0
     last_x: float = 0.0
     last_y: float = 0.0
 
