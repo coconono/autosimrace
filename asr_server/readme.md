@@ -40,6 +40,10 @@ asr_server/
 - `TRACKSIM_INFINITE=1` (or `--infinite`) — auto-starts infinite mode on launch:
   loads the configured default track + its cars, then auto-restarts a new race
   whenever all cars wreck (the existing in-app loop).
+- `TRACKSIM_TRAIN_FIRST=1` (or `--train-first`, combined with `TRACKSIM_INFINITE=1`)
+  — runs the training/simulate phase first (`training_races` from `tracksim.conf`),
+  then hands off into infinite mode once training completes. It is set by
+  `asr-track` and `asr-tracksim.service` so the server trains before racing.
 - `ASR_STREAM=1` — pipes each rendered frame (`RGBA`) to a named FIFO. With the HUD
   shown (`stream_show_panes=1`) the leaderboard/bottom-stats panes are rendered and
   composed by a **separate process** (`src.common.asr_stream_hud`) so that work runs on

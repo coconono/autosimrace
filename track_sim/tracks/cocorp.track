@@ -339,8 +339,8 @@
         ]
       },
       {
-        "instance_name": "car_2",
-        "car_file": "car.car",
+        "instance_name": "car2",
+        "car_file": "car2.car",
         "start_pose": [
           986.2,
           737.0,
@@ -348,8 +348,8 @@
         ]
       },
       {
-        "instance_name": "car_5",
-        "car_file": "car.car",
+        "instance_name": "car2_2",
+        "car_file": "car2.car",
         "start_pose": [
           900.2,
           703.0,
@@ -357,8 +357,8 @@
         ]
       },
       {
-        "instance_name": "car_6",
-        "car_file": "car.car",
+        "instance_name": "car2_3",
+        "car_file": "car2.car",
         "start_pose": [
           900.2,
           669.0,
@@ -366,8 +366,8 @@
         ]
       },
       {
-        "instance_name": "car_7",
-        "car_file": "car.car",
+        "instance_name": "car2_4",
+        "car_file": "car2.car",
         "start_pose": [
           900.2,
           737.0,
@@ -375,8 +375,8 @@
         ]
       },
       {
-        "instance_name": "car_10",
-        "car_file": "car.car",
+        "instance_name": "car2_5",
+        "car_file": "car2.car",
         "start_pose": [
           814.2,
           703.0,
@@ -384,8 +384,8 @@
         ]
       },
       {
-        "instance_name": "car_11",
-        "car_file": "car.car",
+        "instance_name": "bigE",
+        "car_file": "bigE.car",
         "start_pose": [
           814.2,
           669.0,
@@ -393,8 +393,8 @@
         ]
       },
       {
-        "instance_name": "car_12",
-        "car_file": "car.car",
+        "instance_name": "bigE_2",
+        "car_file": "bigE.car",
         "start_pose": [
           814.2,
           737.0,
@@ -402,8 +402,8 @@
         ]
       },
       {
-        "instance_name": "car_13",
-        "car_file": "car.car",
+        "instance_name": "bigE_3",
+        "car_file": "bigE.car",
         "start_pose": [
           728.2,
           703.0,
@@ -411,8 +411,8 @@
         ]
       },
       {
-        "instance_name": "car_14",
-        "car_file": "car.car",
+        "instance_name": "bigE_4",
+        "car_file": "bigE.car",
         "start_pose": [
           728.2,
           669.0,
@@ -420,64 +420,10 @@
         ]
       },
       {
-        "instance_name": "car_15",
-        "car_file": "car.car",
+        "instance_name": "bigE_5",
+        "car_file": "bigE.car",
         "start_pose": [
           728.2,
-          737.0,
-          0.0
-        ]
-      },
-      {
-        "instance_name": "car_16",
-        "car_file": "car.car",
-        "start_pose": [
-          642.2,
-          703.0,
-          0.0
-        ]
-      },
-      {
-        "instance_name": "car_17",
-        "car_file": "car.car",
-        "start_pose": [
-          642.2,
-          669.0,
-          0.0
-        ]
-      },
-      {
-        "instance_name": "car_18",
-        "car_file": "car.car",
-        "start_pose": [
-          642.2,
-          737.0,
-          0.0
-        ]
-      },
-      {
-        "instance_name": "car_19",
-        "car_file": "car.car",
-        "start_pose": [
-          556.2,
-          703.0,
-          0.0
-        ]
-      },
-      {
-        "instance_name": "car_20",
-        "car_file": "car.car",
-        "start_pose": [
-          556.2,
-          669.0,
-          0.0
-        ]
-      },
-      {
-        "instance_name": "car_21",
-        "car_file": "car.car",
-        "start_pose": [
-          556.2,
           737.0,
           0.0
         ]
@@ -485,7 +431,7 @@
     ],
     "car_routes": {
       "car": {
-        "active_target_index": 24,
+        "active_target_index": 30,
         "waypoints": [
           {
             "x": 258.0,
@@ -910,410 +856,11 @@
         ]
       },
       "CloverFPV": {
-        "active_target_index": 24,
+        "active_target_index": 1,
         "waypoints": [
           {
-            "x": 282.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 281.9961722539713,
-            "y": 584.3874932252045,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.64860393079994,
-            "y": 629.4519819055673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 305.71273260444406,
-            "y": 660.3659156185229,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 344.9226046673175,
-            "y": 673.3759872109451,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 391.3467094875485,
-            "y": 678.0613613042594,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 440.0971879721765,
-            "y": 679.0010714532054,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1125.7779872781134,
-            "y": 679.0009605212515,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1174.401020221249,
-            "y": 678.0943082760446,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1222.341498811388,
-            "y": 674.8144644489315,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1268.3225154503587,
-            "y": 667.4851587560541,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.6852759190672,
-            "y": 653.2246070341124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.4025750939882,
-            "y": 614.2846158922284,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0160325493694,
-            "y": 325.4119113272961,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1315.580913108104,
-            "y": 279.0226354899928,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1290.1532501409952,
-            "y": 247.8968833970168,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1250.215216850646,
-            "y": 232.1932016794803,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1204.5365101727512,
-            "y": 223.9926961305879,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1156.5567578967623,
-            "y": 221.35449426333932,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.540913618291,
-            "y": 220.9998526493165,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.6324427226323,
-            "y": 220.99996186318648,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 420.6542796260665,
-            "y": 221.17284313297714,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 373.2076415327104,
-            "y": 224.18334160147776,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 329.7030733788464,
-            "y": 233.45531623045687,
+            "x": 281.6541811879713,
+            "y": 292.31541337292583,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
@@ -1326,8 +873,407 @@
             "created_lap": 0
           },
           {
-            "x": 281.6541811879713,
-            "y": 292.31541337292583,
+            "x": 329.7030733788464,
+            "y": 233.45531623045687,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 373.2076415327104,
+            "y": 224.18334160147776,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 420.6542796260665,
+            "y": 221.17284313297714,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 470.6324427226323,
+            "y": 220.99996186318648,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 519.4961950195454,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 568.4009109386114,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 617.3056268576775,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 666.2103427767436,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 715.1150586958096,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 764.0197746148756,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 812.9244905339416,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 861.8292064530076,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 910.7339223720737,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 959.6386382911396,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1008.5433542102057,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1057.4480701292716,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1106.540913618291,
+            "y": 220.9998526493165,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1156.5567578967623,
+            "y": 221.35449426333932,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1204.5365101727512,
+            "y": 223.9926961305879,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1250.215216850646,
+            "y": 232.1932016794803,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1290.1532501409952,
+            "y": 247.8968833970168,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1315.580913108104,
+            "y": 279.0226354899928,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0160325493694,
+            "y": 325.4119113272961,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 373.4768801834833,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 422.38159610254945,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 471.28631202161534,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 520.1910279406816,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 569.0957438597474,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.4025750939882,
+            "y": 614.2846158922284,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1304.6852759190672,
+            "y": 653.2246070341124,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1268.3225154503587,
+            "y": 667.4851587560541,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1222.341498811388,
+            "y": 674.8144644489315,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1174.401020221249,
+            "y": 678.0943082760446,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1125.7779872781134,
+            "y": 679.0009605212515,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1076.1893854558168,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1027.2846695367505,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 978.3799536176846,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 929.4752376986187,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 880.5705217795521,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 831.6658058604863,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 782.7610899414203,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 733.8563740223542,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 684.9516581032881,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 636.0469421842221,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 587.1422262651561,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 538.2375103460905,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 489.3327944270241,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 440.0971879721765,
+            "y": 679.0010714532054,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 391.3467094875485,
+            "y": 678.0613613042594,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 344.9226046673175,
+            "y": 673.3759872109451,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 305.71273260444406,
+            "y": 660.3659156185229,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.64860393079994,
+            "y": 629.4519819055673,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 281.9961722539713,
+            "y": 584.3874932252045,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 535.893150518743,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 486.9884345996767,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 438.08371868061124,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 389.17900276154546,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 340.2742868424797,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
@@ -1335,367 +1281,52 @@
         ]
       },
       "piss": {
-        "active_target_index": 24,
+        "active_target_index": 1,
         "waypoints": [
           {
-            "x": 238.0,
-            "y": 340.2742868424797,
+            "x": 238.34581881202874,
+            "y": 284.54458662707407,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 238.0,
-            "y": 389.17900276154546,
+            "x": 260.9032531836023,
+            "y": 226.28146078067044,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 238.0,
-            "y": 438.08371868061124,
+            "x": 313.01692085948764,
+            "y": 192.74202215959227,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 238.0,
-            "y": 486.9884345996767,
+            "x": 367.05675545139394,
+            "y": 180.61538777742646,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 238.0,
-            "y": 535.893150518743,
+            "x": 419.1662489837075,
+            "y": 177.19801209512778,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 238.0038277460287,
-            "y": 585.2082396504131,
+            "x": 470.5505154783266,
+            "y": 177.00003813681352,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 241.11325393442038,
-            "y": 643.9714412852499,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 279.46402931649646,
-            "y": 695.678881731571,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 335.22982573207105,
-            "y": 716.2950975991212,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 388.6341865810347,
-            "y": 721.9776705695158,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 439.662940148788,
-            "y": 722.9989285467946,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1126.1891418109417,
-            "y": 722.9990394787485,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1176.3265341962115,
-            "y": 722.0521562207771,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1227.405866010791,
-            "y": 718.5220402781812,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1280.8304637121735,
-            "y": 709.6698862090053,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1336.8531750013547,
-            "y": 683.2450378876457,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1361.5974249060118,
-            "y": 622.6634552937637,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1361.9839674506306,
-            "y": 323.732417201539,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1356.5944879116566,
-            "y": 263.0888135431601,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1316.6116939323656,
-            "y": 212.7407921447331,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1262.5744117977597,
-            "y": 189.96465327606916,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1209.698809552331,
-            "y": 180.29657885324173,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1157.9328927585946,
-            "y": 177.37601938252917,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.701952847828,
-            "y": 177.0001473506835,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
+            "x": 519.4961950195454,
             "y": 177.0,
             "kind": "permanent",
             "source": "generated",
@@ -1709,50 +1340,365 @@
             "created_lap": 0
           },
           {
-            "x": 519.4961950195454,
+            "x": 617.3056268576775,
             "y": 177.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 470.5505154783266,
-            "y": 177.00003813681352,
+            "x": 666.2103427767436,
+            "y": 177.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 419.1662489837075,
-            "y": 177.19801209512778,
+            "x": 715.1150586958096,
+            "y": 177.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 367.05675545139394,
-            "y": 180.61538777742646,
+            "x": 764.0197746148756,
+            "y": 177.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 313.01692085948764,
-            "y": 192.74202215959227,
+            "x": 812.9244905339416,
+            "y": 177.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 260.9032531836023,
-            "y": 226.28146078067044,
+            "x": 861.8292064530076,
+            "y": 177.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 238.34581881202874,
-            "y": 284.54458662707407,
+            "x": 910.7339223720737,
+            "y": 177.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 959.6386382911396,
+            "y": 177.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1008.5433542102057,
+            "y": 177.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1057.4480701292716,
+            "y": 177.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1106.701952847828,
+            "y": 177.0001473506835,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1157.9328927585946,
+            "y": 177.37601938252917,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1209.698809552331,
+            "y": 180.29657885324173,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1262.5744117977597,
+            "y": 189.96465327606916,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1316.6116939323656,
+            "y": 212.7407921447331,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1356.5944879116566,
+            "y": 263.0888135431601,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1361.9839674506306,
+            "y": 323.732417201539,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1362.0,
+            "y": 373.4768801834833,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1362.0,
+            "y": 422.38159610254945,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1362.0,
+            "y": 471.28631202161534,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1362.0,
+            "y": 520.1910279406816,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1362.0,
+            "y": 569.0957438597474,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1361.5974249060118,
+            "y": 622.6634552937637,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1336.8531750013547,
+            "y": 683.2450378876457,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1280.8304637121735,
+            "y": 709.6698862090053,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1227.405866010791,
+            "y": 718.5220402781812,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1176.3265341962115,
+            "y": 722.0521562207771,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1126.1891418109417,
+            "y": 722.9990394787485,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1076.1893854558168,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1027.2846695367505,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 978.3799536176846,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 929.4752376986187,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 880.5705217795521,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 831.6658058604863,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 782.7610899414203,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 733.8563740223542,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 684.9516581032881,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 636.0469421842221,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 587.1422262651561,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 538.2375103460905,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 489.3327944270241,
+            "y": 723.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 439.662940148788,
+            "y": 722.9989285467946,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 388.6341865810347,
+            "y": 721.9776705695158,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 335.22982573207105,
+            "y": 716.2950975991212,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 279.46402931649646,
+            "y": 695.678881731571,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 241.11325393442038,
+            "y": 643.9714412852499,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 238.0038277460287,
+            "y": 585.2082396504131,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 238.0,
+            "y": 535.893150518743,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 238.0,
+            "y": 486.9884345996767,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 238.0,
+            "y": 438.08371868061124,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 238.0,
+            "y": 389.17900276154546,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 238.0,
+            "y": 340.2742868424797,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
@@ -1760,7 +1706,7 @@
         ]
       },
       "coconono": {
-        "active_target_index": 22,
+        "active_target_index": 8,
         "waypoints": [
           {
             "x": 258.0,
@@ -2185,1281 +2131,6 @@
         ]
       },
       "Yamster": {
-        "active_target_index": 22,
-        "waypoints": [
-          {
-            "x": 282.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 281.9961722539713,
-            "y": 584.3874932252045,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.64860393079994,
-            "y": 629.4519819055673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 305.71273260444406,
-            "y": 660.3659156185229,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 344.9226046673175,
-            "y": 673.3759872109451,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 391.3467094875485,
-            "y": 678.0613613042594,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 440.0971879721765,
-            "y": 679.0010714532054,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1125.7779872781134,
-            "y": 679.0009605212515,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1174.401020221249,
-            "y": 678.0943082760446,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1222.341498811388,
-            "y": 674.8144644489315,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1268.3225154503587,
-            "y": 667.4851587560541,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.6852759190672,
-            "y": 653.2246070341124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.4025750939882,
-            "y": 614.2846158922284,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0160325493694,
-            "y": 325.4119113272961,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1315.580913108104,
-            "y": 279.0226354899928,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1290.1532501409952,
-            "y": 247.8968833970168,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1250.215216850646,
-            "y": 232.1932016794803,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1204.5365101727512,
-            "y": 223.9926961305879,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1156.5567578967623,
-            "y": 221.35449426333932,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.540913618291,
-            "y": 220.9998526493165,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.6324427226323,
-            "y": 220.99996186318648,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 420.6542796260665,
-            "y": 221.17284313297714,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 373.2076415327104,
-            "y": 224.18334160147776,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 329.7030733788464,
-            "y": 233.45531623045687,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 295.0182685030823,
-            "y": 254.06933097166643,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 281.6541811879713,
-            "y": 292.31541337292583,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          }
-        ]
-      },
-      "car_2": {
-        "active_target_index": 22,
-        "waypoints": [
-          {
-            "x": 238.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0038277460287,
-            "y": 585.2082396504131,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 241.11325393442038,
-            "y": 643.9714412852499,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 279.46402931649646,
-            "y": 695.678881731571,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 335.22982573207105,
-            "y": 716.2950975991212,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 388.6341865810347,
-            "y": 721.9776705695158,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 439.662940148788,
-            "y": 722.9989285467946,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1126.1891418109417,
-            "y": 722.9990394787485,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1176.3265341962115,
-            "y": 722.0521562207771,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1227.405866010791,
-            "y": 718.5220402781812,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1280.8304637121735,
-            "y": 709.6698862090053,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1336.8531750013547,
-            "y": 683.2450378876457,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1361.5974249060118,
-            "y": 622.6634552937637,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1361.9839674506306,
-            "y": 323.732417201539,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1356.5944879116566,
-            "y": 263.0888135431601,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1316.6116939323656,
-            "y": 212.7407921447331,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1262.5744117977597,
-            "y": 189.96465327606916,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1209.698809552331,
-            "y": 180.29657885324173,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1157.9328927585946,
-            "y": 177.37601938252917,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.701952847828,
-            "y": 177.0001473506835,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.5505154783266,
-            "y": 177.00003813681352,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 419.1662489837075,
-            "y": 177.19801209512778,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 367.05675545139394,
-            "y": 180.61538777742646,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 313.01692085948764,
-            "y": 192.74202215959227,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 260.9032531836023,
-            "y": 226.28146078067044,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.34581881202874,
-            "y": 284.54458662707407,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          }
-        ]
-      },
-      "car_5": {
-        "active_target_index": 20,
-        "waypoints": [
-          {
-            "x": 258.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0003479769117,
-            "y": 584.8351730935001,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 259.9929584782293,
-            "y": 637.3716870217578,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 291.3952580837454,
-            "y": 679.6275334983673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 339.63563433900123,
-            "y": 696.7864110590411,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 389.86715153854095,
-            "y": 702.0157118125811,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 439.8603255230555,
-            "y": 702.9999025951631,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1126.002253386929,
-            "y": 702.9999126798863,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1175.4513005712286,
-            "y": 702.0713162458986,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1225.1038809201532,
-            "y": 698.654960355795,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1275.1450326840759,
-            "y": 690.4950100940275,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1322.231402691224,
-            "y": 669.599387499676,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1341.9634022641828,
-            "y": 618.8548919294295,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1341.9985424955119,
-            "y": 324.4958236223377,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1337.9519539100418,
-            "y": 270.33145988262953,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.5851285726517,
-            "y": 228.72083362304386,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1256.956595912708,
-            "y": 209.1594480048924,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1207.3523098343403,
-            "y": 200.15845034294452,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1157.307376912307,
-            "y": 197.36623523744288,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.6287531980383,
-            "y": 197.00001339551667,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.5877551348292,
-            "y": 197.00000346698306,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 419.84262654841615,
-            "y": 197.18657165778657,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 369.85261276108326,
-            "y": 200.41900315199524,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 320.6015356410143,
-            "y": 211.24806491907617,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 276.4100783288205,
-            "y": 238.9123108674868,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.03143807382077,
-            "y": 288.0767806024612,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          }
-        ]
-      },
-      "car_6": {
         "active_target_index": 20,
         "waypoints": [
           {
@@ -3884,8 +2555,8 @@
           }
         ]
       },
-      "car_7": {
-        "active_target_index": 20,
+      "car2": {
+        "active_target_index": 1,
         "waypoints": [
           {
             "x": 238.0,
@@ -4309,368 +2980,53 @@
           }
         ]
       },
-      "car_10": {
-        "active_target_index": 19,
+      "car2_2": {
+        "active_target_index": 0,
         "waypoints": [
           {
-            "x": 258.0,
-            "y": 340.2742868424797,
+            "x": 258.03143807382077,
+            "y": 288.0767806024612,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 258.0,
-            "y": 389.17900276154546,
+            "x": 276.4100783288205,
+            "y": 238.9123108674868,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 258.0,
-            "y": 438.08371868061124,
+            "x": 320.6015356410143,
+            "y": 211.24806491907617,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 258.0,
-            "y": 486.9884345996767,
+            "x": 369.85261276108326,
+            "y": 200.41900315199524,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 258.0,
-            "y": 535.893150518743,
+            "x": 419.84262654841615,
+            "y": 197.18657165778657,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 258.0003479769117,
-            "y": 584.8351730935001,
+            "x": 470.5877551348292,
+            "y": 197.00000346698306,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 259.9929584782293,
-            "y": 637.3716870217578,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 291.3952580837454,
-            "y": 679.6275334983673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 339.63563433900123,
-            "y": 696.7864110590411,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 389.86715153854095,
-            "y": 702.0157118125811,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 439.8603255230555,
-            "y": 702.9999025951631,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1126.002253386929,
-            "y": 702.9999126798863,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1175.4513005712286,
-            "y": 702.0713162458986,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1225.1038809201532,
-            "y": 698.654960355795,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1275.1450326840759,
-            "y": 690.4950100940275,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1322.231402691224,
-            "y": 669.599387499676,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1341.9634022641828,
-            "y": 618.8548919294295,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1341.9985424955119,
-            "y": 324.4958236223377,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1337.9519539100418,
-            "y": 270.33145988262953,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.5851285726517,
-            "y": 228.72083362304386,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1256.956595912708,
-            "y": 209.1594480048924,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1207.3523098343403,
-            "y": 200.15845034294452,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1157.307376912307,
-            "y": 197.36623523744288,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.6287531980383,
-            "y": 197.00001339551667,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
+            "x": 519.4961950195454,
             "y": 197.0,
             "kind": "permanent",
             "source": "generated",
@@ -4684,58 +3040,373 @@
             "created_lap": 0
           },
           {
-            "x": 519.4961950195454,
+            "x": 617.3056268576775,
             "y": 197.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 470.5877551348292,
-            "y": 197.00000346698306,
+            "x": 666.2103427767436,
+            "y": 197.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 419.84262654841615,
-            "y": 197.18657165778657,
+            "x": 715.1150586958096,
+            "y": 197.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 369.85261276108326,
-            "y": 200.41900315199524,
+            "x": 764.0197746148756,
+            "y": 197.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 320.6015356410143,
-            "y": 211.24806491907617,
+            "x": 812.9244905339416,
+            "y": 197.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 276.4100783288205,
-            "y": 238.9123108674868,
+            "x": 861.8292064530076,
+            "y": 197.0,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 258.03143807382077,
-            "y": 288.0767806024612,
+            "x": 910.7339223720737,
+            "y": 197.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 959.6386382911396,
+            "y": 197.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1008.5433542102057,
+            "y": 197.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1057.4480701292716,
+            "y": 197.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1106.6287531980383,
+            "y": 197.00001339551667,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1157.307376912307,
+            "y": 197.36623523744288,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1207.3523098343403,
+            "y": 200.15845034294452,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1256.956595912708,
+            "y": 209.1594480048924,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1304.5851285726517,
+            "y": 228.72083362304386,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1337.9519539100418,
+            "y": 270.33145988262953,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1341.9985424955119,
+            "y": 324.4958236223377,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1342.0,
+            "y": 373.4768801834833,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1342.0,
+            "y": 422.38159610254945,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1342.0,
+            "y": 471.28631202161534,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1342.0,
+            "y": 520.1910279406816,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1342.0,
+            "y": 569.0957438597474,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1341.9634022641828,
+            "y": 618.8548919294295,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1322.231402691224,
+            "y": 669.599387499676,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1275.1450326840759,
+            "y": 690.4950100940275,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1225.1038809201532,
+            "y": 698.654960355795,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1175.4513005712286,
+            "y": 702.0713162458986,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1126.002253386929,
+            "y": 702.9999126798863,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1076.1893854558168,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1027.2846695367505,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 978.3799536176846,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 929.4752376986187,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 880.5705217795521,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 831.6658058604863,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 782.7610899414203,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 733.8563740223542,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 684.9516581032881,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 636.0469421842221,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 587.1422262651561,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 538.2375103460905,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 489.3327944270241,
+            "y": 703.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 439.8603255230555,
+            "y": 702.9999025951631,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 389.86715153854095,
+            "y": 702.0157118125811,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 339.63563433900123,
+            "y": 696.7864110590411,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 291.3952580837454,
+            "y": 679.6275334983673,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 259.9929584782293,
+            "y": 637.3716870217578,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 258.0003479769117,
+            "y": 584.8351730935001,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 258.0,
+            "y": 535.893150518743,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 258.0,
+            "y": 486.9884345996767,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 258.0,
+            "y": 438.08371868061124,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 258.0,
+            "y": 389.17900276154546,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 258.0,
+            "y": 340.2742868424797,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           }
         ]
       },
-      "car_11": {
-        "active_target_index": 19,
+      "car2_3": {
+        "active_target_index": 2,
         "waypoints": [
           {
             "x": 282.0,
@@ -5159,8 +3830,8 @@
           }
         ]
       },
-      "car_12": {
-        "active_target_index": 19,
+      "car2_4": {
+        "active_target_index": 31,
         "waypoints": [
           {
             "x": 238.0,
@@ -5584,8 +4255,8 @@
           }
         ]
       },
-      "car_13": {
-        "active_target_index": 17,
+      "car2_5": {
+        "active_target_index": 1,
         "waypoints": [
           {
             "x": 258.0,
@@ -6009,8 +4680,8 @@
           }
         ]
       },
-      "car_14": {
-        "active_target_index": 17,
+      "bigE": {
+        "active_target_index": 49,
         "waypoints": [
           {
             "x": 282.0,
@@ -6434,8 +5105,8 @@
           }
         ]
       },
-      "car_15": {
-        "active_target_index": 17,
+      "bigE_2": {
+        "active_target_index": 2,
         "waypoints": [
           {
             "x": 238.0,
@@ -6859,8 +5530,8 @@
           }
         ]
       },
-      "car_16": {
-        "active_target_index": 15,
+      "bigE_3": {
+        "active_target_index": 8,
         "waypoints": [
           {
             "x": 258.0,
@@ -7284,411 +5955,12 @@
           }
         ]
       },
-      "car_17": {
-        "active_target_index": 15,
+      "bigE_4": {
+        "active_target_index": 31,
         "waypoints": [
           {
-            "x": 282.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 281.9961722539713,
-            "y": 584.3874932252045,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.64860393079994,
-            "y": 629.4519819055673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 305.71273260444406,
-            "y": 660.3659156185229,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 344.9226046673175,
-            "y": 673.3759872109451,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 391.3467094875485,
-            "y": 678.0613613042594,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 440.0971879721765,
-            "y": 679.0010714532054,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1125.7779872781134,
-            "y": 679.0009605212515,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1174.401020221249,
-            "y": 678.0943082760446,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1222.341498811388,
-            "y": 674.8144644489315,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1268.3225154503587,
-            "y": 667.4851587560541,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.6852759190672,
-            "y": 653.2246070341124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.4025750939882,
-            "y": 614.2846158922284,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0160325493694,
-            "y": 325.4119113272961,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1315.580913108104,
-            "y": 279.0226354899928,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1290.1532501409952,
-            "y": 247.8968833970168,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1250.215216850646,
-            "y": 232.1932016794803,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1204.5365101727512,
-            "y": 223.9926961305879,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1156.5567578967623,
-            "y": 221.35449426333932,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.540913618291,
-            "y": 220.9998526493165,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.6324427226323,
-            "y": 220.99996186318648,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 420.6542796260665,
-            "y": 221.17284313297714,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 373.2076415327104,
-            "y": 224.18334160147776,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 329.7030733788464,
-            "y": 233.45531623045687,
+            "x": 281.6541811879713,
+            "y": 292.31541337292583,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
@@ -7701,1255 +5973,8 @@
             "created_lap": 0
           },
           {
-            "x": 281.6541811879713,
-            "y": 292.31541337292583,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          }
-        ]
-      },
-      "car_18": {
-        "active_target_index": 15,
-        "waypoints": [
-          {
-            "x": 238.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.0038277460287,
-            "y": 585.2082396504131,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 241.11325393442038,
-            "y": 643.9714412852499,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 279.46402931649646,
-            "y": 695.678881731571,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 335.22982573207105,
-            "y": 716.2950975991212,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 388.6341865810347,
-            "y": 721.9776705695158,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 439.662940148788,
-            "y": 722.9989285467946,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 723.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1126.1891418109417,
-            "y": 722.9990394787485,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1176.3265341962115,
-            "y": 722.0521562207771,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1227.405866010791,
-            "y": 718.5220402781812,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1280.8304637121735,
-            "y": 709.6698862090053,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1336.8531750013547,
-            "y": 683.2450378876457,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1361.5974249060118,
-            "y": 622.6634552937637,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1362.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1361.9839674506306,
-            "y": 323.732417201539,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1356.5944879116566,
-            "y": 263.0888135431601,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1316.6116939323656,
-            "y": 212.7407921447331,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1262.5744117977597,
-            "y": 189.96465327606916,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1209.698809552331,
-            "y": 180.29657885324173,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1157.9328927585946,
-            "y": 177.37601938252917,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.701952847828,
-            "y": 177.0001473506835,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 177.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.5505154783266,
-            "y": 177.00003813681352,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 419.1662489837075,
-            "y": 177.19801209512778,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 367.05675545139394,
-            "y": 180.61538777742646,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 313.01692085948764,
-            "y": 192.74202215959227,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 260.9032531836023,
-            "y": 226.28146078067044,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 238.34581881202874,
-            "y": 284.54458662707407,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          }
-        ]
-      },
-      "car_19": {
-        "active_target_index": 13,
-        "waypoints": [
-          {
-            "x": 258.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.0003479769117,
-            "y": 584.8351730935001,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 259.9929584782293,
-            "y": 637.3716870217578,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 291.3952580837454,
-            "y": 679.6275334983673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 339.63563433900123,
-            "y": 696.7864110590411,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 389.86715153854095,
-            "y": 702.0157118125811,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 439.8603255230555,
-            "y": 702.9999025951631,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 703.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1126.002253386929,
-            "y": 702.9999126798863,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1175.4513005712286,
-            "y": 702.0713162458986,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1225.1038809201532,
-            "y": 698.654960355795,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1275.1450326840759,
-            "y": 690.4950100940275,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1322.231402691224,
-            "y": 669.599387499676,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1341.9634022641828,
-            "y": 618.8548919294295,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1342.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1341.9985424955119,
-            "y": 324.4958236223377,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1337.9519539100418,
-            "y": 270.33145988262953,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.5851285726517,
-            "y": 228.72083362304386,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1256.956595912708,
-            "y": 209.1594480048924,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1207.3523098343403,
-            "y": 200.15845034294452,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1157.307376912307,
-            "y": 197.36623523744288,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.6287531980383,
-            "y": 197.00001339551667,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 197.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.5877551348292,
-            "y": 197.00000346698306,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 419.84262654841615,
-            "y": 197.18657165778657,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 369.85261276108326,
-            "y": 200.41900315199524,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 320.6015356410143,
-            "y": 211.24806491907617,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 276.4100783288205,
-            "y": 238.9123108674868,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 258.03143807382077,
-            "y": 288.0767806024612,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          }
-        ]
-      },
-      "car_20": {
-        "active_target_index": 13,
-        "waypoints": [
-          {
-            "x": 282.0,
-            "y": 340.2742868424797,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 389.17900276154546,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 438.08371868061124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 486.9884345996767,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.0,
-            "y": 535.893150518743,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 281.9961722539713,
-            "y": 584.3874932252045,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 282.64860393079994,
-            "y": 629.4519819055673,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 305.71273260444406,
-            "y": 660.3659156185229,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 344.9226046673175,
-            "y": 673.3759872109451,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 391.3467094875485,
-            "y": 678.0613613042594,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 440.0971879721765,
-            "y": 679.0010714532054,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 489.3327944270241,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 538.2375103460905,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 587.1422262651561,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 636.0469421842221,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 684.9516581032881,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 733.8563740223542,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 782.7610899414203,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 831.6658058604863,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 880.5705217795521,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 929.4752376986187,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 978.3799536176846,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1027.2846695367505,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1076.1893854558168,
-            "y": 679.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1125.7779872781134,
-            "y": 679.0009605212515,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1174.401020221249,
-            "y": 678.0943082760446,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1222.341498811388,
-            "y": 674.8144644489315,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1268.3225154503587,
-            "y": 667.4851587560541,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1304.6852759190672,
-            "y": 653.2246070341124,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.4025750939882,
-            "y": 614.2846158922284,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 569.0957438597474,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 520.1910279406816,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 471.28631202161534,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 422.38159610254945,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0,
-            "y": 373.4768801834833,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1318.0160325493694,
-            "y": 325.4119113272961,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1315.580913108104,
-            "y": 279.0226354899928,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1290.1532501409952,
-            "y": 247.8968833970168,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1250.215216850646,
-            "y": 232.1932016794803,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1204.5365101727512,
-            "y": 223.9926961305879,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1156.5567578967623,
-            "y": 221.35449426333932,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1106.540913618291,
-            "y": 220.9998526493165,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1057.4480701292716,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 1008.5433542102057,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 959.6386382911396,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 910.7339223720737,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 861.8292064530076,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 812.9244905339416,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 764.0197746148756,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 715.1150586958096,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 666.2103427767436,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 617.3056268576775,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 568.4009109386114,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 519.4961950195454,
-            "y": 221.0,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 470.6324427226323,
-            "y": 220.99996186318648,
-            "kind": "permanent",
-            "source": "generated",
-            "created_lap": 0
-          },
-          {
-            "x": 420.6542796260665,
-            "y": 221.17284313297714,
+            "x": 329.7030733788464,
+            "y": 233.45531623045687,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
@@ -8962,30 +5987,401 @@
             "created_lap": 0
           },
           {
-            "x": 329.7030733788464,
-            "y": 233.45531623045687,
+            "x": 420.6542796260665,
+            "y": 221.17284313297714,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 295.0182685030823,
-            "y": 254.06933097166643,
+            "x": 470.6324427226323,
+            "y": 220.99996186318648,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           },
           {
-            "x": 281.6541811879713,
-            "y": 292.31541337292583,
+            "x": 519.4961950195454,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 568.4009109386114,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 617.3056268576775,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 666.2103427767436,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 715.1150586958096,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 764.0197746148756,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 812.9244905339416,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 861.8292064530076,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 910.7339223720737,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 959.6386382911396,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1008.5433542102057,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1057.4480701292716,
+            "y": 221.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1106.540913618291,
+            "y": 220.9998526493165,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1156.5567578967623,
+            "y": 221.35449426333932,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1204.5365101727512,
+            "y": 223.9926961305879,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1250.215216850646,
+            "y": 232.1932016794803,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1290.1532501409952,
+            "y": 247.8968833970168,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1315.580913108104,
+            "y": 279.0226354899928,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0160325493694,
+            "y": 325.4119113272961,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 373.4768801834833,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 422.38159610254945,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 471.28631202161534,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 520.1910279406816,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.0,
+            "y": 569.0957438597474,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1318.4025750939882,
+            "y": 614.2846158922284,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1304.6852759190672,
+            "y": 653.2246070341124,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1268.3225154503587,
+            "y": 667.4851587560541,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1222.341498811388,
+            "y": 674.8144644489315,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1174.401020221249,
+            "y": 678.0943082760446,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1125.7779872781134,
+            "y": 679.0009605212515,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1076.1893854558168,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 1027.2846695367505,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 978.3799536176846,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 929.4752376986187,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 880.5705217795521,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 831.6658058604863,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 782.7610899414203,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 733.8563740223542,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 684.9516581032881,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 636.0469421842221,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 587.1422262651561,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 538.2375103460905,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 489.3327944270241,
+            "y": 679.0,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 440.0971879721765,
+            "y": 679.0010714532054,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 391.3467094875485,
+            "y": 678.0613613042594,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 344.9226046673175,
+            "y": 673.3759872109451,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 305.71273260444406,
+            "y": 660.3659156185229,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.64860393079994,
+            "y": 629.4519819055673,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 281.9961722539713,
+            "y": 584.3874932252045,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 535.893150518743,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 486.9884345996767,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 438.08371868061124,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 389.17900276154546,
+            "kind": "permanent",
+            "source": "generated",
+            "created_lap": 0
+          },
+          {
+            "x": 282.0,
+            "y": 340.2742868424797,
             "kind": "permanent",
             "source": "generated",
             "created_lap": 0
           }
         ]
       },
-      "car_21": {
-        "active_target_index": 13,
+      "bigE_5": {
+        "active_target_index": 35,
         "waypoints": [
           {
             "x": 238.0,
@@ -9476,8 +6872,73 @@
           120
         ]
       },
-      "6": {
-        "name": "car_2",
+      "22": {
+        "name": "car2",
+        "body_color": [
+          40,
+          187,
+          42
+        ],
+        "nose_color": [
+          245,
+          120,
+          120
+        ]
+      },
+      "23": {
+        "name": "car2_2",
+        "body_color": [
+          40,
+          187,
+          42
+        ],
+        "nose_color": [
+          245,
+          120,
+          120
+        ]
+      },
+      "24": {
+        "name": "car2_3",
+        "body_color": [
+          40,
+          187,
+          42
+        ],
+        "nose_color": [
+          245,
+          120,
+          120
+        ]
+      },
+      "25": {
+        "name": "car2_4",
+        "body_color": [
+          40,
+          187,
+          42
+        ],
+        "nose_color": [
+          245,
+          120,
+          120
+        ]
+      },
+      "26": {
+        "name": "car2_5",
+        "body_color": [
+          40,
+          187,
+          42
+        ],
+        "nose_color": [
+          245,
+          120,
+          120
+        ]
+      },
+      "27": {
+        "name": "bigE",
         "body_color": [
           210,
           42,
@@ -9489,8 +6950,8 @@
           120
         ]
       },
-      "7": {
-        "name": "car_5",
+      "28": {
+        "name": "bigE_2",
         "body_color": [
           210,
           42,
@@ -9502,8 +6963,8 @@
           120
         ]
       },
-      "8": {
-        "name": "car_6",
+      "29": {
+        "name": "bigE_3",
         "body_color": [
           210,
           42,
@@ -9515,8 +6976,8 @@
           120
         ]
       },
-      "9": {
-        "name": "car_7",
+      "30": {
+        "name": "bigE_4",
         "body_color": [
           210,
           42,
@@ -9528,151 +6989,8 @@
           120
         ]
       },
-      "10": {
-        "name": "car_10",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "11": {
-        "name": "car_11",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "12": {
-        "name": "car_12",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "13": {
-        "name": "car_13",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "14": {
-        "name": "car_14",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "15": {
-        "name": "car_15",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "16": {
-        "name": "car_16",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "17": {
-        "name": "car_17",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "18": {
-        "name": "car_18",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "19": {
-        "name": "car_19",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "20": {
-        "name": "car_20",
-        "body_color": [
-          210,
-          42,
-          42
-        ],
-        "nose_color": [
-          245,
-          120,
-          120
-        ]
-      },
-      "21": {
-        "name": "car_21",
+      "31": {
+        "name": "bigE_5",
         "body_color": [
           210,
           42,

@@ -34,6 +34,7 @@ from src.common.models import (
     CarRuntimeState,
     CarSeriesStats,
     SeriesLapRecord,
+    TrackLineMemory,
     VisionMatrix,
     Waypoint,
 )
@@ -88,6 +89,15 @@ class SimCar:
     pass_side_bias: float = 0.0
     pace_bias: float = 1.0
     steer_bias: float = 1.0
+    # Per-segment "stay on the track" memory (persists across races/sessions).
+    line_memory: TrackLineMemory = field(default_factory=TrackLineMemory)
+    # Per-lap bookkeeping used by line_memory.advance_lap.
+    lap_seen_indices: list[int] = field(default_factory=list)
+    lap_offtrack_indices: list[int] = field(default_factory=list)
+    # Cumulative training progression metrics (not reset each race).
+    clean_laps_total: int = 0
+    total_laps: int = 0
+    cum_offtrack: int = 0
     route_plan: CarRoutePlan = field(default_factory=CarRoutePlan)
     vision_matrix: VisionMatrix = field(default_factory=VisionMatrix.empty)
     last_visible_line_point: tuple[float, float] | None = None
@@ -596,6 +606,10 @@ def _reset_for_race(sim_car: SimCar, track) -> None:
     sim_car.preferred_line_offset = baseline_offset if sim_car.pass_side_bias >= 0.0 else -baseline_offset
     sim_car.line_offset_frozen = False
     sim_car.barrier_hits = 0
+    # Keep sim_car.line_memory (per-segment stay-on-track learning) intact so it
+    # compounds across races; only clear per-lap bookkeeping.
+    sim_car.lap_seen_indices = []
+    sim_car.lap_offtrack_indices = []
     sim_car.best_lap_seconds = 0.0
     sim_car.last_lap_seconds = 0.0
     sim_car.lap_start_time = 0.0
@@ -1364,6 +1378,7 @@ def autonomous_controls(
     stall_recover: bool = False,
     hard_recenter: bool = False,
     post_waypoint_boost: float = 0.0,
+    segment_speed_mult: float = 1.0,
 ) -> tuple[float, float, float, str, str, tuple[float, float] | None]:
     centerline = _build_centerline(track)
     if len(centerline) < 2:
@@ -1927,7 +1942,7 @@ def autonomous_controls(
     speed_priority_scale = 1.0 + (behavior.speed_priority + behavior.avoid_slowdown_priority) * 0.09
     speed_priority_scale *= pace_bias
     forward_speed = max(0.0, state.speed)
-    target_speed = min(car.max_speed, base_target * angle_factor * speed_priority_scale * learning.target_speed_bias)
+    target_speed = min(car.max_speed, base_target * angle_factor * speed_priority_scale * learning.target_speed_bias * segment_speed_mult)
 
     # Stronger turn-entry protection with geometric forecast.
     turn_entry_severity = max(
@@ -2523,22 +2538,48 @@ def _learning_path(logs_dir: Path) -> Path:
     return logs_dir / "car_learning.json"
 
 
-def _save_car_learning(sim_cars: list[SimCar], logs_dir: Path) -> None:
-    """Persist each car's trained CarLearningState keyed by instance name."""
+def _save_car_learning(sim_cars: list[SimCar], logs_dir: Path, track_name: str = "") -> None:
+    """Persist each car's trained CarLearningState keyed by instance name, plus
+    per-track-segment line memory so stay-on-track learning compounds across races."""
     try:
         import json
         logs_dir.mkdir(parents=True, exist_ok=True)
         data = {}
         for entry in sim_cars:
+            line_data = entry.line_memory.to_dict()
+            track_lines = {track_name: line_data} if track_name else {}
             data[entry.instance_name] = {
                 "target_speed_bias": entry.learning.target_speed_bias,
                 "steering_aggression": entry.learning.steering_aggression,
                 "safety_bias": entry.learning.safety_bias,
+                "track_lines": track_lines,
             }
         with _learning_path(logs_dir).open("w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=2)
     except Exception:
         pass
+
+
+def _load_track_line_memory(instance_name: str, logs_dir: Path, track_name: str, n: int) -> TrackLineMemory:
+    """Load a saved per-track-segment line memory for a car (if present)."""
+    try:
+        import json
+        with _learning_path(logs_dir).open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        entry = data.get(instance_name)
+        if not isinstance(entry, dict):
+            return TrackLineMemory.sized(n)
+        track_lines = entry.get("track_lines")
+        lines = None
+        if isinstance(track_lines, dict):
+            # Keyed by track name.
+            lines = track_lines.get(track_name)
+            if lines is None and "segments" in track_lines:
+                # Back-compat: unwrapped single-track memory dict.
+                lines = track_lines
+        return TrackLineMemory.from_dict(lines, n)
+    except Exception:
+        return TrackLineMemory.sized(n)
 
 
 def _load_car_learning(instance_name: str, logs_dir: Path) -> dict[str, float] | None:
@@ -2736,6 +2777,11 @@ def main() -> int:
     series_completed_races = 0
     series_race_number = 0
     infinite_mode = False
+    # Armed when a "train-first" auto-start is requested: training runs first
+    # and, once training_races complete, the main loop hands off into infinite
+    # mode. Kept separately from infinite_mode so the series-points / all-wreck
+    # paths don't treat the training phase as live racing.
+    pending_infinite = False
 
     pygame.init()
     screen = pygame.display.set_mode((width, height))
@@ -2899,6 +2945,11 @@ def main() -> int:
         # Personalize fresh routes (no stored route, or stored all-generated routes).
         if not raw_list or stored_all_generated:
             _personalize_route(route_plan, len(sim_cars))
+        # Per-segment stay-on-track memory sized to this track's route, restored
+        # from disk if a prior training session saved it (keyed by instance name).
+        line_memory = _load_track_line_memory(
+            name, logs_dir, track.name or "", len(route_plan.permanent_waypoints)
+        )
         state = spawn_state(track, loaded)
         pose = (state.x, state.y, state.heading_radians)
         has_valid_explicit_start = False
@@ -2921,6 +2972,7 @@ def main() -> int:
                 start_pose=pose,
                 behavior=profile,
                 learning=learning,
+                line_memory=line_memory,
                 pass_side_bias=pass_side_bias,
                 pace_bias=pace_bias,
                 steer_bias=steer_bias,
@@ -3030,6 +3082,11 @@ def main() -> int:
     # CLI flag (--infinite). Reuses the exact code path of the "Race -> Infinite
     # Mode" menu action so the existing all-wreck reset/hot-reload loop takes over.
     infinite_requested = "--infinite" in sys.argv[1:] or os.environ.get("TRACKSIM_INFINITE") == "1"
+    # Optional train-first: when combined with infinite, run the training/simulate
+    # phase first (training_races from config, hot-improving + saving car params),
+    # then hand off into infinite mode. Opt-in via env (TRACKSIM_TRAIN_FIRST=1) or
+    # CLI flag (--train-first), only meaningful together with --infinite.
+    train_first_requested = "--train-first" in sys.argv[1:] or os.environ.get("TRACKSIM_TRAIN_FIRST") == "1"
     if infinite_requested:
         if track is None:
             message = "Infinite mode requested but no track is loaded."
@@ -3039,13 +3096,30 @@ def main() -> int:
             for entry in sim_cars:
                 entry.series_stats = CarSeriesStats()
             series_active = False
-            infinite_mode = True
             series_completed_races = 0
             series_race_number = 0
-            if not start_race_session(training=False):
+            if train_first_requested:
+                # Start in training mode; infinite is armed (pending_infinite) and
+                # the loop hands off into infinite mode when training completes.
+                training_total_races = training_race_target
+                training_completed_races = 0
+                training_active = True
                 infinite_mode = False
+                pending_infinite = True
+                if not start_race_session(training=True):
+                    training_active = False
+                    pending_infinite = False
+                else:
+                    message = (
+                        f"Train-first started: running {training_total_races} training "
+                        "races, then infinite mode."
+                    )
             else:
-                message = "Infinite mode started. Cars will auto-reset on all-wreck."
+                infinite_mode = True
+                if not start_race_session(training=False):
+                    infinite_mode = False
+                else:
+                    message = "Infinite mode started. Cars will auto-reset on all-wreck."
 
     # Auto-load above selects the most recently added car. For an unattended
     # stream, start with NO car selected (a highlighted car + vision overlays
@@ -3067,6 +3141,11 @@ def main() -> int:
         # Real-time frame dt (capped). Simulation speed is handled via sub-steps,
         # not by inflating dt beyond stable physics step sizes.
         frame_dt = min(clock.get_time() / 1000.0, 0.05)
+        # track_transform is only (re)computed when the track pane is drawn, which
+        # is skipped while training_active. Default it every frame so a mid-frame
+        # flip from training_active -> False (training handoff) can't leave the
+        # variable unbound when it's read below.
+        track_transform = (1.0, 0.0, 0.0)
         if training_active:
             # Run multiple fixed sub-steps per frame to accelerate simulation
             # without destabilizing physics/control. Each sub-step uses a capped
@@ -3638,10 +3717,15 @@ def main() -> int:
                     route_plan=entry.route_plan,
                     vision_matrix=entry.vision_matrix,
                     last_visible_line_point=entry.last_visible_line_point,
-                    preferred_line_offset=entry.preferred_line_offset,
+                    preferred_line_offset=(
+                        entry.line_memory.offset(entry.route_plan.active_target_index)
+                    ),
                     stall_recover=entry.route_stall_recover_time > 0.0,
                     hard_recenter=entry.hard_route_recenter_time > 0.0,
                     post_waypoint_boost=entry.post_waypoint_boost_time,
+                    segment_speed_mult=(
+                        entry.line_memory.speed(entry.route_plan.active_target_index)
+                    ),
                 )
                 entry.last_visible_line_point = seen_line_point
                 if decision_logger is not None:
@@ -3698,6 +3782,10 @@ def main() -> int:
                 if active_wp is not None:
                     wp_dist = math.hypot(active_wp.x - state.x, active_wp.y - state.y)
                     idx = entry.route_plan.active_target_index
+                    # Record traversed segments this lap (dedup consecutive dups)
+                    # so line_memory.advance_lap knows what to credit/penalize.
+                    if not entry.lap_seen_indices or entry.lap_seen_indices[-1] != idx:
+                        entry.lap_seen_indices.append(idx)
                     if idx == entry.route_last_idx:
                         entry.route_idx_stall_time += dt
                     else:
@@ -3860,6 +3948,13 @@ def main() -> int:
 
                 if state.wall_contact_frames > 0 and prev_wall_contact == 0:
                     entry.barrier_hits += 1
+                    entry.cum_offtrack += 1
+                    # Direct, corner-specific stay-on-track feedback: penalize the
+                    # segment this car was targeting when it left the surface.
+                    seg_idx = entry.route_plan.active_target_index
+                    if seg_idx not in entry.lap_offtrack_indices:
+                        entry.lap_offtrack_indices.append(seg_idx)
+                    entry.line_memory.record_offtrack(seg_idx, car)
                     if decision_logger is not None:
                         decision_logger.log_decision(
                             entry.race_elapsed,
@@ -3930,26 +4025,24 @@ def main() -> int:
                         entry.learning.target_speed_bias = max(0.72, entry.learning.target_speed_bias - 0.03)
                         entry.learning.steering_aggression = max(0.75, entry.learning.steering_aggression - 0.02)
 
-                    # Per-lap line preference adaptation. Leader freeze removed,
-                    # so all cars continue adapting their lateral line offset.
-                    adapt_sign = 1.0 if entry.pass_side_bias >= 0.0 else -1.0
-                    delta = 0.0
-                    if lap_time > 0.0 and prev_best_lap > 0.0:
-                        if lap_time < prev_best_lap * 0.99:
-                            delta += car.line_offset_scale * 3.2 * adapt_sign
-                        elif lap_time > prev_best_lap * 1.01:
-                            delta -= car.line_offset_scale * 2.0 * adapt_sign
-                    if lap_damage > 6.0:
-                        delta -= car.line_offset_scale * 2.2 * adapt_sign
-
-                    entry.preferred_line_offset += delta
-                    entry.preferred_line_offset *= 0.985
-                    # Wider line-offset learning range so cars explore more lines.
-                    max_offset = max(12.0, car.width * 1.8)
-                    entry.preferred_line_offset = max(
-                        -max_offset,
-                        min(max_offset, entry.preferred_line_offset),
+                    # Per-lap stay-on-track adaptation: credit traversed segments
+                    # that were clean, penalize segments this car left the surface
+                    # on (those segments' entry speed drops and line pulls toward
+                    # the centerline). Replaces the old single global line offset.
+                    entry.line_memory.advance_lap(
+                        entry.lap_seen_indices,
+                        entry.lap_offtrack_indices,
+                        car.line_offset_scale,
+                        entry.pass_side_bias,
+                        max(12.0, car.width * 1.8),
                     )
+                    # Cumulative progression metrics across the whole training run.
+                    if entry.lap_seen_indices:
+                        entry.total_laps += 1
+                        if not entry.lap_offtrack_indices:
+                            entry.clean_laps_total += 1
+                    entry.lap_offtrack_indices = []
+                    entry.lap_seen_indices = []
 
                 # Drift tracking for race stats 2.
                 if state.state == "drifting":
@@ -3995,7 +4088,7 @@ def main() -> int:
             race_outcome_saved = True
             if training_active:
                 training_completed_races += 1
-                _save_car_learning(sim_cars, logs_dir)
+                _save_car_learning(sim_cars, logs_dir, track.name or "")
             # Award series points if series is active.
             if series_active or infinite_mode:
                 series_race_number += 1
@@ -4014,7 +4107,17 @@ def main() -> int:
         if training_active and not racing and race_outcome_saved:
             if training_completed_races >= training_total_races:
                 training_active = False
-                message = f"Training complete: {training_completed_races}/{training_total_races} races."
+                if pending_infinite:
+                    # Train-first: hand off into the existing infinite-mode loop
+                    # (hot-reload car configs, start an unlimited race that resets
+                    # on all-wreck).
+                    pending_infinite = False
+                    infinite_mode = True
+                    _reload_car_configs(sim_cars, cars_dir)
+                    start_race_session(training=False)
+                    message = "Training complete. Starting infinite mode."
+                else:
+                    message = f"Training complete: {training_completed_races}/{training_total_races} races."
             else:
                 start_race_session(training=True)
         elif infinite_mode and not racing and race_outcome_saved:
@@ -4072,11 +4175,15 @@ def main() -> int:
                 spread = max(all_best_laps) - min(all_best_laps)
                 lap_spread_line = f"Best Lap Spread: {spread:.2f}s"
 
-            avg_speed_bias = 0.0
-            avg_steer_aggr = 0.0
-            if sim_cars:
-                avg_speed_bias = sum(entry.learning.target_speed_bias for entry in sim_cars) / len(sim_cars)
-                avg_steer_aggr = sum(entry.learning.steering_aggression for entry in sim_cars) / len(sim_cars)
+            avg_clean = 0.0
+            avg_offtrack_per_lap = 0.0
+            _n_cars = max(1, len(sim_cars))
+            for entry in sim_cars:
+                _laps = max(1, entry.total_laps)
+                avg_clean += entry.clean_laps_total / _laps
+                avg_offtrack_per_lap += entry.cum_offtrack / _laps
+            avg_clean /= _n_cars
+            avg_offtrack_per_lap /= _n_cars
 
             bar_rect = pygame.Rect(panel.x + 24, panel.y + panel.height - 56, panel.width - 48, 20)
             pygame.draw.rect(screen, (44, 54, 68), bar_rect, border_radius=4)
@@ -4097,7 +4204,7 @@ def main() -> int:
                 f"Speed: {training_speed_multiplier:.0f}x",
                 f"Progress: {training_completed_races}/{training_total_races} races",
                 lap_spread_line,
-                f"Avg Learn: speed_bias={avg_speed_bias:.2f} steer_aggr={avg_steer_aggr:.2f}",
+                f"Track-stay: {avg_clean * 100.0:.0f}% clean  {avg_offtrack_per_lap:.2f} off-track/lap",
             ]
             draw_lines(screen, font, overlay_lines, panel.x + 24, panel.y + 20, (232, 240, 246))
 

@@ -101,6 +101,13 @@ Configuration files live in `tools/track_sim/etc/`:
   - `capture_width`, `capture_height`: streaming frame size (single source of truth for the `ASR_STREAM=1` build — must match what `asr-stream-run` reads)
   - `stream_show_panes`: when `1` AND `ASR_STREAM=1`, the stream shows a leaderboard + bottom-stats overlay instead of a pure fullscreen track. The overlay is rendered by a **separate process** (`src.common.asr_stream_hud`) so that work (and the full-frame composition) runs on its own core; the renderer ships only the track-region pixels and publishes a HUD snapshot over a datagram socket when the standings change. Default `0`.
   - `stream_leaderboard_width`, `stream_bottom_stats_height`: sizes of the two HUD panes (right leaderboard column width, and bottom-stats strip height) used when `stream_show_panes=1`. The race (track) pane takes the remaining space, so **making either value smaller enlarges the on-track view**. Defaults `280` / `220`.
+
+Headless / server auto-start (used by `asr_server`):
+
+- `TRACKSIM_INFINITE=1` (or `--infinite`) — auto-starts infinite mode on launch.
+- `TRACKSIM_TRAIN_FIRST=1` (or `--train-first`, paired with infinite) — runs the
+  training/simulate phase first (see `training_races`), then enters infinite mode.
+- `ASR_STREAM=1` — pipes rendered frames to a named FIFO for live streaming.
 - `trackgen.conf`
   - `window_width`, `window_height`: generator window size
   - `tracks_dir`: relative output/input directory for tracks

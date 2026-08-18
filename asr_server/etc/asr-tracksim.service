@@ -20,6 +20,7 @@ Environment=SDL_VIDEODRIVER=dummy
 Environment=SDL_AUDIODRIVER=dummy
 Environment=ASR_STREAM=1
 Environment=TRACKSIM_INFINITE=1
+Environment=TRACKSIM_TRAIN_FIRST=1
 Environment=ASR_CONF=/etc/autosim/stream.conf
 EnvironmentFile=/etc/autosim/stream.conf
 ExecStart=/home/arse/track_sim/.venv/bin/python -m src.tracksim.main

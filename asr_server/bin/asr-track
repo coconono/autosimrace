@@ -82,7 +82,7 @@ case "$cmd" in
     fi
 
     SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
-    ASR_STREAM=1 ASR_FIFO="$RENDER_FIFO" ASR_FPS="${TRACK_FPS:-12}" TRACKSIM_INFINITE=1 \
+    ASR_STREAM=1 ASR_FIFO="$RENDER_FIFO" ASR_FPS="${TRACK_FPS:-12}" TRACKSIM_INFINITE=1 TRACKSIM_TRAIN_FIRST=1 \
     ASR_HUD_SOCK="$HUD_SOCK" \
       nohup .venv/bin/python -m src.tracksim.main >> "$LOG" 2>&1 &
     echo $! > "$PIDFILE"

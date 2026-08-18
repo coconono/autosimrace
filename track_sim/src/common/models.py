@@ -423,6 +423,111 @@ class CarBehaviorProfile:
     risk_tolerance: float = 0.6
 
 
+# Per-track-segment "stay on the track" learning. Each segment of a car's route
+# (indexed by waypoint) learns its own entry-speed multiplier and lateral line
+# offset, so cars slow down / pull in specifically where they keep leaving the
+# surface instead of tuning one global value.
+SEGMENT_SPEED_MIN = 0.80
+SEGMENT_SPEED_MAX = 1.10
+
+
+@dataclass
+class SegmentLearning:
+    entry_speed: float = 1.0
+    line_offset: float = 0.0
+    offtrack_events: int = 0
+    clean_laps: int = 0
+
+
+@dataclass
+class TrackLineMemory:
+    segments: list[SegmentLearning] = field(default_factory=list)
+
+    @classmethod
+    def sized(cls, n: int) -> "TrackLineMemory":
+        return cls(segments=[SegmentLearning() for _ in range(max(0, int(n)))])
+
+    def _get(self, i: int) -> "SegmentLearning | None":
+        if not self.segments:
+            return None
+        return self.segments[i % len(self.segments)]
+
+    def speed(self, i: int) -> float:
+        seg = self._get(i)
+        return seg.entry_speed if seg is not None else 1.0
+
+    def offset(self, i: int) -> float:
+        seg = self._get(i)
+        return seg.line_offset if seg is not None else 0.0
+
+    def record_offtrack(self, i: int, car: CarConfig) -> None:
+        seg = self._get(i)
+        if seg is None:
+            return
+        seg.offtrack_events += 1
+        # Slow this segment and pull its line back toward the centerline.
+        penalty = 0.92 if seg.offtrack_events < 2 else 0.94
+        seg.entry_speed = max(SEGMENT_SPEED_MIN, seg.entry_speed * penalty)
+        seg.line_offset *= 0.8
+
+    def advance_lap(
+        self,
+        seen_indices: list[int],
+        offtrack_indices: list[int],
+        line_offset_scale: float,
+        pass_side_bias: float,
+        max_offset: float,
+    ) -> None:
+        if not self.segments:
+            return
+        dirty = set(offtrack_indices)
+        clean_set = set(seen_indices) - dirty
+        sign = 1.0 if pass_side_bias >= 0.0 else -1.0
+        for i in clean_set:
+            seg = self._get(i)
+            if seg is None:
+                continue
+            seg.clean_laps += 1
+            seg.entry_speed = min(SEGMENT_SPEED_MAX, seg.entry_speed * 1.02)
+            seg.line_offset += line_offset_scale * 1.5 * sign
+        for i in dirty:
+            seg = self._get(i)
+            if seg is None:
+                continue
+            seg.clean_laps = 0
+            seg.entry_speed = max(SEGMENT_SPEED_MIN, seg.entry_speed * 0.94)
+            seg.line_offset *= 0.86
+        for seg in self.segments:
+            seg.entry_speed = max(SEGMENT_SPEED_MIN, min(SEGMENT_SPEED_MAX, seg.entry_speed))
+            seg.line_offset = max(-max_offset, min(max_offset, seg.line_offset))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "n": len(self.segments),
+            "segments": [
+                {"entry_speed": s.entry_speed, "line_offset": s.line_offset}
+                for s in self.segments
+            ],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Any, n: int) -> "TrackLineMemory":
+        mem = cls.sized(n)
+        segments = None
+        if isinstance(data, dict):
+            segments = data.get("segments")
+        if isinstance(segments, list):
+            for i, item in enumerate(segments):
+                if i >= n or not isinstance(item, dict):
+                    continue
+                mem.segments[i].entry_speed = max(
+                    SEGMENT_SPEED_MIN,
+                    min(SEGMENT_SPEED_MAX, float(item.get("entry_speed", 1.0))),
+                )
+                mem.segments[i].line_offset = float(item.get("line_offset", 0.0))
+        return mem
+
+
 @dataclass
 class CarLearningState:
     target_speed_bias: float = 1.0
