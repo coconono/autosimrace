@@ -98,6 +98,8 @@ Configuration files live in `tools/track_sim/etc/`:
   - `series_name`: display name for a race series (empty disables series UI)
   - `series_races`: number of races in the series (0 = use `training_races` / infinite mode)
   - `series_logo`: path to series logo image (relative to `images/logos/` or absolute path)
+   - `session_mode`: `0` (default) = classic series/infinite mode, `1` = session mode with qualifying phase before the main series
+   - `qualifying_laps`: lap limit for each qualifying race in session mode (default = `series_laps` or 3)
   - `capture_width`, `capture_height`: streaming frame size (single source of truth for the `ASR_STREAM=1` build — must match what `asr-stream-run` reads)
   - `stream_show_panes`: when `1` AND `ASR_STREAM=1`, the stream shows a leaderboard + bottom-stats overlay instead of a pure fullscreen track. The overlay is rendered by a **separate process** (`src.common.asr_stream_hud`) so that work (and the full-frame composition) runs on its own core; the renderer ships only the track-region pixels and publishes a HUD snapshot over a datagram socket when the standings change. Default `0`.
   - `stream_leaderboard_width`, `stream_bottom_stats_height`: sizes of the two HUD panes (right leaderboard column width, and bottom-stats strip height) used when `stream_show_panes=1`. The race (track) pane takes the remaining space, so **making either value smaller enlarges the on-track view**. Defaults `280` / `220`.
@@ -126,6 +128,20 @@ A race series is a group of races where points accumulate across all races. Poin
 - Completing the race: 1 point
 
 The series winner is the car with the most points after the configured number of races. Series stats (fastest/slowest lap, points leaders) are tracked across all races in the series.
+
+### Session Mode
+
+When `session_mode=1` in `tracksim.conf`, the Race → **Session Mode** menu entry runs a qualifying phase before the main series:
+
+- Cars are grouped by their `.car` file (same source file = same type).
+- Each car type runs one independent qualifying race (lap-limited by `qualifying_laps`).
+- Only cars of the qualifying type are on track; other types are hidden.
+- The qualifying winner moves to the back of that type's grid; all others advance one position.
+- Series points are awarded during qualifying races.
+- After all types have qualified, the main series begins with all cars on their qualifying grid positions.
+- The series stats pane shows the current session phase (qualifying with type name, or main series race number).
+
+When `session_mode=0` (default), **Session Mode** behaves identically to the legacy infinite mode (auto-reset on all-wreck, hot-reload car configs).
 
 ### Series Logo
 

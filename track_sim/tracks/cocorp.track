@@ -294,7 +294,7 @@
     "start_grid_index": 1,
     "car_starts": [
       {
-        "instance_name": "car",
+        "instance_name": "Grog",
         "car_file": "car.car",
         "start_pose": [
           1072.2,
@@ -339,7 +339,7 @@
         ]
       },
       {
-        "instance_name": "car2",
+        "instance_name": "Blorbo",
         "car_file": "car2.car",
         "start_pose": [
           986.2,
@@ -348,7 +348,7 @@
         ]
       },
       {
-        "instance_name": "car2_2",
+        "instance_name": "Ripster",
         "car_file": "car2.car",
         "start_pose": [
           900.2,
@@ -357,7 +357,7 @@
         ]
       },
       {
-        "instance_name": "car2_3",
+        "instance_name": "Mort",
         "car_file": "car2.car",
         "start_pose": [
           900.2,
@@ -366,7 +366,7 @@
         ]
       },
       {
-        "instance_name": "car2_4",
+        "instance_name": "Mindy",
         "car_file": "car2.car",
         "start_pose": [
           900.2,
@@ -375,7 +375,7 @@
         ]
       },
       {
-        "instance_name": "car2_5",
+        "instance_name": "Jeorf",
         "car_file": "car2.car",
         "start_pose": [
           814.2,
@@ -384,7 +384,7 @@
         ]
       },
       {
-        "instance_name": "bigE",
+        "instance_name": "TwoWeeksTom",
         "car_file": "bigE.car",
         "start_pose": [
           814.2,
@@ -393,7 +393,7 @@
         ]
       },
       {
-        "instance_name": "bigE_2",
+        "instance_name": "Hoagie",
         "car_file": "bigE.car",
         "start_pose": [
           814.2,
@@ -402,7 +402,7 @@
         ]
       },
       {
-        "instance_name": "bigE_3",
+        "instance_name": "BumFi",
         "car_file": "bigE.car",
         "start_pose": [
           728.2,
@@ -411,7 +411,7 @@
         ]
       },
       {
-        "instance_name": "bigE_4",
+        "instance_name": "Loaf",
         "car_file": "bigE.car",
         "start_pose": [
           728.2,
@@ -420,7 +420,7 @@
         ]
       },
       {
-        "instance_name": "bigE_5",
+        "instance_name": "LossiFRQ",
         "car_file": "bigE.car",
         "start_pose": [
           728.2,

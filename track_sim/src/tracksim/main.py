@@ -2612,93 +2612,46 @@ def _reload_car_configs(sim_cars: list[SimCar], cars_dir: Path) -> None:
         except Exception:
             continue
 
+def _get_car_type_name(car: SimCar) -> str:
+    """Return the .car filename stem (type name) for a SimCar."""
+    return Path(car.source_file).stem
 
-def _draw_car_stats_dropdown(
-    screen: pygame.Surface,
-    sim_cars: list[SimCar],
-    stats_view_index: int,
-    stats_dropdown_open: bool,
-    stats_dropdown_scroll: int,
-    cs_x: int,
-    ss1_y: int,
-    cs_w: int,
-    bottom_pane: pygame.Rect,
-    mouse_pos: tuple[int, int],
-) -> tuple[pygame.Rect | None, list[tuple[int, pygame.Rect]], int]:
-    """Draw the car selector dropdown button and (when open) its scrollable list.
 
-    Returns (dropdown_rect, rows, clamped_scroll). Rows store the real car index
-    so clicks map correctly even when the list is scrolled.
+def _group_cars_by_type(sim_cars: list[SimCar]) -> list[tuple[str, list[SimCar]]]:
+    """Group cars by their source_file stem, preserving load order per type.
+
+    Returns ordered list of (type_name, cars_list), where type_name is the .car
+    filename stem (e.g., 'car' for 'car.car').
     """
-    if not sim_cars:
-        return None, [], 0
+    type_map: dict[str, list[SimCar]] = {}
+    order: list[str] = []
+    for car in sim_cars:
+        tname = _get_car_type_name(car)
+        if tname not in type_map:
+            type_map[tname] = []
+            order.append(tname)
+        type_map[tname].append(car)
+    return [(t, type_map[t]) for t in order]
 
-    stats_index = stats_view_index if stats_view_index < len(sim_cars) else 0
-    selected = sim_cars[stats_index]
 
-    # Dropdown button.
-    dropdown_rect = pygame.Rect(cs_x, ss1_y, min(cs_w, 200), 24)
-    pygame.draw.rect(screen, (45, 52, 64), dropdown_rect, border_radius=4)
-    pygame.draw.rect(screen, (95, 106, 126), dropdown_rect, width=1, border_radius=4)
-    sel_name = selected.instance_name[:22]
-    sel_name_surf = render_text_fit(sel_name, dropdown_rect.width - 12, 20, CAR_NAME_ACCENT, start_size=18, min_size=10)
-    sel_caret_surf = render_text_fit("  [v]", dropdown_rect.width - 12, 20, (120, 130, 148), start_size=18, min_size=10)
-    cursor_x = dropdown_rect.x + 6
-    screen.blit(sel_name_surf, (cursor_x, dropdown_rect.y + 3))
-    cursor_x += sel_name_surf.get_width()
-    screen.blit(sel_caret_surf, (cursor_x, dropdown_rect.y + 3))
+def _reorder_grid_for_qualifying(type_cars: list[SimCar], finished_order: list[SimCar]) -> None:
+    """Apply winner-goes-to-back grid reorder for a qualifying race.
 
-    if not stats_dropdown_open:
-        return dropdown_rect, [], 0
-
-    # Open list: compute how many rows fit between the button and the bottom
-    # pane edge (reserving space for the status message line).
-    row_h = 22
-    row_gap = 23
-    available = bottom_pane.bottom - dropdown_rect.bottom - 4 - 44
-    max_visible = max(1, min(len(sim_cars), available // row_gap))
-    total_rows = len(sim_cars)
-    max_scroll = max(0, total_rows - max_visible)
-    scroll = max(0, min(stats_dropdown_scroll, max_scroll))
-
-    # Opaque panel behind the list so underlying stats do not show through.
-    panel_h = max_visible * row_gap + 4
-    panel = pygame.Rect(dropdown_rect.x, dropdown_rect.bottom + 2, dropdown_rect.width, panel_h)
-    pygame.draw.rect(screen, (45, 52, 64), panel)
-    pygame.draw.rect(screen, (95, 106, 126), panel, width=1, border_radius=4)
-
-    has_scrollbar = total_rows > max_visible
-    row_w = panel.width - 2 - (10 if has_scrollbar else 0)
-
-    rows: list[tuple[int, pygame.Rect]] = []
-    drop_y = panel.y + 2
-    for drop_idx in range(max_visible):
-        car_idx = scroll + drop_idx
-        if car_idx >= total_rows:
-            break
-        drop_entry = sim_cars[car_idx]
-        drop_rect = pygame.Rect(panel.x + 1, drop_y, row_w, row_h)
-        hovered = mouse_pos is not None and drop_rect.collidepoint(mouse_pos)
-        pygame.draw.rect(screen, (60, 70, 86) if hovered else (45, 52, 64), drop_rect)
-        drop_surface = render_text_fit(drop_entry.instance_name[:22], drop_rect.width - 10, 18, CAR_NAME_ACCENT, start_size=16, min_size=10)
-        screen.blit(drop_surface, (drop_rect.x + 5, drop_rect.y + 2))
-        rows.append((car_idx, drop_rect))
-        drop_y += row_gap
-
-    # Scrollbar track + thumb when the list overflows.
-    if has_scrollbar:
-        bar_x = panel.right - 8
-        track_rect = pygame.Rect(bar_x, panel.y + 2, 6, panel.height - 4)
-        pygame.draw.rect(screen, (30, 36, 46), track_rect, border_radius=3)
-        thumb_h = max(14, int(track_rect.height * max_visible / total_rows))
-        thumb_y = track_rect.y
-        if max_scroll > 0:
-            thumb_y += int((track_rect.height - thumb_h) * scroll / max_scroll)
-        thumb_rect = pygame.Rect(track_rect.x, thumb_y, 6, thumb_h)
-        pygame.draw.rect(screen, (120, 132, 150), thumb_rect, border_radius=3)
-
-    return dropdown_rect, rows, scroll
-
+    The winner (first in finished_order) moves to the last position among
+    type_cars. All other cars advance one position up.
+    The reorder updates start_pose by swapping pose values between cars.
+    """
+    if not type_cars or len(type_cars) < 2:
+        return
+    if not finished_order:
+        return
+    winner = finished_order[0]
+    # Build new order: remove winner, then append it to the end.
+    new_order = [c for c in type_cars if c is not winner] + [winner]
+    # Collect start poses in the current grid order and reassign.
+    poses = [c.start_pose for c in type_cars]
+    for car, pose in zip(new_order, poses):
+        car.start_pose = pose
 
 def main() -> int:
     project_dir = Path(__file__).resolve().parents[2]
@@ -2773,6 +2726,19 @@ def main() -> int:
     series_race_target = max(0, as_int(conf, "series_races", 0))
     series_lap_limit = max(1, as_int(conf, "series_laps", 3))
     series_logo_path = as_str(conf, "series_logo", "")
+    # Session mode replaces infinite mode with qualifying + main series.
+    session_mode = as_int(conf, "session_mode", 0)
+    qualifying_laps = max(1, as_int(conf, "qualifying_laps", 0) or series_lap_limit)
+    qualifying_races = max(1, as_int(conf, "qualifying_races", 1))
+    session_active = False
+    session_qualifying = False
+    session_qualifying_count = 0
+    session_qualifying_total = 0
+    session_qualifying_active_type = ""
+    session_main_race_count = 0
+    session_type_order = []
+    session_active_car_ids: set[int] = set()
+    session_skip_qualifying = False
     series_active = False
     series_completed_races = 0
     series_race_number = 0
@@ -2859,11 +2825,8 @@ def main() -> int:
 
     show_bottom_car_stats = True
     show_bottom_race_stats = True
-    stats_dropdown_open = False
-    stats_dropdown_rows: list[tuple[int, pygame.Rect]] = []
     stats_view_index = 0
-    stats_dropdown_rect: pygame.Rect | None = None
-    stats_dropdown_scroll = 0
+    leaderboard_car_rects: list[tuple[int, pygame.Rect]] = []
     training_active = False
     training_total_races = training_race_target
     training_completed_races = 0
@@ -2875,7 +2838,7 @@ def main() -> int:
 
     menus = [
         ("Start", ["Load Track", "Load Car", "Remove Selected Car", "Optimize", "Save Track", "Quit"]),
-        ("Race", ["Start Race", "Simulate", "Start Series", "Infinite Mode", "Pause/Resume", "Reset Cars", "+ Waypoint", "- Waypoint", "Quit Race"]),
+        ("Race", ["Start Race", "Simulate", "Start Series", "Session Mode", "Pause/Resume", "Reset Cars", "+ Waypoint", "- Waypoint", "Quit Race"]),
         ("Stats", ["Toggle Car Stats", "Toggle Race Stats"]),
     ]
 
@@ -3205,21 +3168,13 @@ def main() -> int:
                     _rebuild_route_for_pose(track, entry.route_plan, entry.start_pose)
                 dragging_index = None
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                # Car stats dropdown interaction.
-                if not training_active and show_bottom_car_stats and stats_dropdown_rect is not None and stats_dropdown_rect.collidepoint(event.pos):
-                    stats_dropdown_open = not stats_dropdown_open
-                    continue
-                if not training_active and stats_dropdown_open:
-                    chosen_stats = None
-                    for idx, rect in stats_dropdown_rows:
-                        if rect.collidepoint(event.pos):
-                            chosen_stats = idx
+                # Leaderboard / clickable car name interaction.
+                if not training_active and leaderboard_car_rects:
+                    for lb_idx, lb_rect in leaderboard_car_rects:
+                        if lb_rect.collidepoint(event.pos):
+                            stats_view_index = lb_idx
+                            selected_car_index = lb_idx
                             break
-                    stats_dropdown_open = False
-                    if chosen_stats is not None and 0 <= chosen_stats < len(sim_cars):
-                        stats_view_index = chosen_stats
-                        selected_car_index = chosen_stats
-                    continue
 
                 if load_picker_open:
                     chosen_index = None
@@ -3319,6 +3274,14 @@ def main() -> int:
                         if racing:
                             message = "Quit current race before starting simulation."
                         else:
+                            # Cancel any active session before starting simulation.
+                            if session_active:
+                                session_active = False
+                                session_qualifying = False
+                                session_main_race_count = 0
+                                session_active_car_ids = set()
+                                session_skip_qualifying = False
+                                message = "Session cancelled. Starting simulation."
                             training_total_races = training_race_target
                             training_completed_races = 0
                             training_active = True
@@ -3339,21 +3302,56 @@ def main() -> int:
                                 series_active = False
                             else:
                                 message = f"Series started: {series_name or 'Unnamed'} ({series_race_target if series_race_target > 0 else '∞'} races)"
-                    elif action.menu == "Race" and action.item == "Infinite Mode":
+                    elif action.menu == "Race" and action.item == "Session Mode":
                         if racing:
-                            message = "Quit current race before starting infinite mode."
+                            message = "Quit current race before starting session mode."
                         else:
-                            # Reset series state and start infinite mode.
-                            for entry in sim_cars:
-                                entry.series_stats = CarSeriesStats()
-                            series_active = False
-                            infinite_mode = True
-                            series_completed_races = 0
-                            series_race_number = 0
-                            if not start_race_session(training=False):
-                                infinite_mode = False
+                            if not sim_cars:
+                                message = "Load at least one car first."
                             else:
-                                message = "Infinite mode started. Cars will auto-reset on all-wreck."
+                                # Reset series state and start session.
+                                for entry in sim_cars:
+                                    entry.series_stats = CarSeriesStats()
+                                series_active = False
+                                infinite_mode = False
+                                series_completed_races = 0
+                                series_race_number = 0
+                                if session_mode:
+                                    # Session mode: qualifying + main series.
+                                    type_order = _group_cars_by_type(sim_cars)
+                                    session_type_order = [
+                                        (tname, tcars)
+                                        for tname, tcars in type_order
+                                        for _ in range(qualifying_races)
+                                    ]
+                                    session_qualifying_total = len(session_type_order)
+                                    session_qualifying_count = 0
+                                    session_qualifying = True
+                                    session_active = True
+                                    session_main_race_count = 0
+                                    session_qualifying_active_type = ""
+                                    # Start first qualifying race: filter to first type's cars.
+                                    if session_type_order:
+                                        tname, type_cars = session_type_order[0]
+                                        session_qualifying_active_type = tname
+                                        session_qualifying_count = 0  # none completed yet
+                                        # Build active-set: only this type's cars are active.
+                                        id_set = {id(c) for c in type_cars}
+                                        session_active_car_ids = id_set
+                                        session_skip_qualifying = len(type_cars) < 2
+                                        if session_skip_qualifying:
+                                            # Single-car type: no race needed.
+                                            message = f"Session: {tname} has 1 car, skipping qualifying."
+                                        else:
+                                            if start_race_session(training=False):
+                                                message = f"Session started: Qualifying 1/{session_qualifying_total} ({tname})."
+                                else:
+                                    # Legacy infinite mode.
+                                    infinite_mode = True
+                                    if not start_race_session(training=False):
+                                        infinite_mode = False
+                                    else:
+                                        message = "Infinite mode started. Cars will auto-reset on all-wreck."
                     elif action.menu == "Race" and action.item == "Pause/Resume":
                         if training_active:
                             message = "Pause/Resume disabled during simulation."
@@ -3409,11 +3407,9 @@ def main() -> int:
                         show_bottom_race_stats = not show_bottom_race_stats
                         message = "Race stats shown." if show_bottom_race_stats else "Race stats hidden."
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button in (4, 5):
-                if not training_active and stats_dropdown_open and stats_dropdown_rect is not None:
-                    stats_dropdown_scroll += 1 if event.button == 5 else -1
+                pass  # scroll handled by draw_lines_fit_segmented internally
             elif event.type == pygame.MOUSEWHEEL:
-                if not training_active and stats_dropdown_open and stats_dropdown_rect is not None:
-                    stats_dropdown_scroll -= event.y
+                pass
 
         # Pane-based layout: dark background, track in its own pane, leaderboard
         # side pane, and bottom stats pane.
@@ -3433,19 +3429,24 @@ def main() -> int:
                 track_transform = (1.0, 0.0, 0.0)
 
             if not asr_streaming:
+                # Reset clickable rects each frame.
+                leaderboard_car_rects = []
                 # Leaderboard side pane.
                 pygame.draw.rect(screen, (24, 28, 34), leaderboard_pane)
                 pygame.draw.rect(screen, (60, 70, 86), leaderboard_pane, width=1)
                 draw_lines(screen, font, ["Leaderboard"], leaderboard_pane.x + 10, leaderboard_pane.y + 8, (235, 235, 235))
                 if sim_cars:
+                    display_cars = sim_cars
+                    if session_active and session_qualifying and session_active_car_ids:
+                        display_cars = [entry for entry in sim_cars if id(entry) in session_active_car_ids]
                     ordered = sorted(
-                        sim_cars,
+                        display_cars,
                         key=lambda e: e.state.net_progress,
                         reverse=True,
                     )
                     lb_y = leaderboard_pane.y + 38
                     lb_segments: list[tuple[str, str, str]] = []
-                    for pos, entry in enumerate(ordered[:12], start=1):
+                    for pos, entry in enumerate(ordered, start=1):
                         pts = entry.series_stats.points
                         cn = entry.car_number
                         prefix = f"{pos}. " + (f"#{cn} " if cn > 0 else "")
@@ -3460,6 +3461,21 @@ def main() -> int:
                         max_width=leaderboard_pane.width - 16,
                         line_height=22, start_size=18, min_size=10,
                     )
+                    # Build clickable rects for leaderboard rows.
+                    lb_line_h = 22
+                    leaderboard_car_rects = []
+                    for pos, entry in enumerate(ordered, start=1):
+                        try:
+                            orig_idx = sim_cars.index(entry)
+                        except ValueError:
+                            continue
+                        row_rect = pygame.Rect(
+                            leaderboard_pane.x + 8,
+                            lb_y + (pos - 1) * lb_line_h,
+                            leaderboard_pane.width - 16,
+                            lb_line_h,
+                        )
+                        leaderboard_car_rects.append((orig_idx, row_rect))
 
                 # Bottom stats pane background.
                 pygame.draw.rect(screen, (24, 28, 34), bottom_pane)
@@ -3469,10 +3485,23 @@ def main() -> int:
                 ss1_x = bottom_pane.x + 10
                 ss1_y = bottom_pane.y + 8
                 ss1_w = 300
-                draw_lines(screen, font, ["Series Stats"], ss1_x, ss1_y, (200, 220, 255))
+                session_offset = 0
+                # Session context line.
+                if session_active:
+                    if session_qualifying:
+                        session_line = f"Session: Qualifying ({min(session_qualifying_count + 1, session_qualifying_total)}/{session_qualifying_total})"
+                        if session_qualifying_active_type:
+                            session_line += f" -- Type: {session_qualifying_active_type}"
+                    elif session_main_race_count > 0:
+                        session_line = f"Session: Main Race {session_main_race_count}"
+                    else:
+                        session_line = "Session: Main Series"
+                    draw_lines(screen, font, [session_line], ss1_x, ss1_y, (180, 200, 255))
+                    session_offset = 24
+                draw_lines(screen, font, ["Series Stats"], ss1_x, ss1_y + session_offset, (200, 220, 255))
                 series_segments: list[tuple[str, str, str]] = [
                     (f"Name: {series_name}" if series_name else "Name: (none)", "", ""),
-                    (f"Races: {series_completed_races}/{series_race_target if series_race_target > 0 else '∞'}", "", ""),
+                    (f"Races: {series_completed_races}", "", ""),
                 ]
                 # Series fastest/slowest lap across all cars.
                 all_fastest = [e.series_stats.fastest_lap for e in sim_cars if e.series_stats.fastest_lap]
@@ -3487,20 +3516,20 @@ def main() -> int:
                     series_segments.append((f"Slow: ", sr.car_name[:12], f" R{sr.race_number} {sr.lap_time:.2f}s"))
                 else:
                     series_segments.append(("Slow: --", "", ""))
-                draw_lines_fit_segmented(screen, series_segments, ss1_x, ss1_y + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=ss1_w, line_height=20, start_size=16, min_size=10)
+                draw_lines_fit_segmented(screen, series_segments, ss1_x, ss1_y + session_offset + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=ss1_w, line_height=20, start_size=16, min_size=10)
 
                 # Series logo in series stats 1.
                 if series_logo_scaled is not None:
                     logo_size = 80
-                    screen.blit(series_logo_scaled, (ss1_x + ss1_w - logo_size - 4, ss1_y + 4))
+                    screen.blit(series_logo_scaled, (ss1_x + ss1_w - logo_size - 4, ss1_y + session_offset + 4))
 
                 # Series stats 2 (top 5 points leaders).
                 ss2_x = ss1_x + ss1_w + 10
                 ss2_w = 240
-                draw_lines(screen, font, ["Points Leaders"], ss2_x, ss1_y, (200, 220, 255))
+                draw_lines(screen, font, ["Points Leaders"], ss2_x, ss1_y + session_offset, (200, 220, 255))
                 if sim_cars:
                     leaders = sorted(sim_cars, key=lambda e: e.series_stats.points, reverse=True)[:5]
-                    pl_y = ss1_y + 28
+                    pl_y = ss1_y + session_offset + 28
                     pl_segments: list[tuple[str, str, str]] = []
                     for rank, entry in enumerate(leaders, start=1):
                         cn = entry.car_number
@@ -3514,7 +3543,7 @@ def main() -> int:
                 if show_bottom_race_stats:
                     rs1_x = ss2_x + ss2_w + 10
                     rs1_w = 260
-                    draw_lines(screen, font, ["Race Stats"], rs1_x, ss1_y, (200, 220, 255))
+                    draw_lines(screen, font, ["Race Stats"], rs1_x, ss1_y + session_offset, (200, 220, 255))
                     leader_entry = max(sim_cars, key=lambda e: e.state.net_progress) if sim_cars else None
                     top_speed_entry = max(sim_cars, key=lambda e: e.max_race_speed) if sim_cars else None
                     leader_laps = max((e.state.laps for e in sim_cars), default=0)
@@ -3537,12 +3566,12 @@ def main() -> int:
                         race1_segments.append((f"Slow: {worst[1]:.2f}s (", worst[0][:10], ")"))
                     else:
                         race1_segments.append(("Slow: --", "", ""))
-                    draw_lines_fit_segmented(screen, race1_segments, rs1_x, ss1_y + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=rs1_w, line_height=20, start_size=16, min_size=10)
+                    draw_lines_fit_segmented(screen, race1_segments, rs1_x, ss1_y + session_offset + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=rs1_w, line_height=20, start_size=16, min_size=10)
 
                     # Race stats 2 (drift, crash, contact).
                     rs2_x = rs1_x + rs1_w + 10
                     rs2_w = 280
-                    draw_lines(screen, font, ["Race Stats 2"], rs2_x, ss1_y, (200, 220, 255))
+                    draw_lines(screen, font, ["Race Stats 2"], rs2_x, ss1_y + session_offset, (200, 220, 255))
                     drift_car = max(sim_cars, key=lambda e: e.max_drift_duration) if sim_cars else None
                     crash_car = min((e for e in sim_cars if e.first_crash_time is not None), key=lambda e: e.first_crash_time, default=None) if sim_cars else None
                     contact_car = max((e for e in sim_cars if e.last_contact_time is not None), key=lambda e: e.last_contact_time, default=None) if sim_cars else None
@@ -3559,7 +3588,7 @@ def main() -> int:
                         race2_segments.append(("Last Contact: ", contact_car.instance_name[:12], f" {contact_car.last_contact_time:.1f}s"))
                     else:
                         race2_segments.append(("Last Contact: --", "", ""))
-                    draw_lines_fit_segmented(screen, race2_segments, rs2_x, ss1_y + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=rs2_w, line_height=20, start_size=16, min_size=10)
+                    draw_lines_fit_segmented(screen, race2_segments, rs2_x, ss1_y + session_offset + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=rs2_w, line_height=20, start_size=16, min_size=10)
 
                     # Car stats pane (right section of bottom pane).
                     if show_bottom_car_stats and sim_cars:
@@ -3572,7 +3601,7 @@ def main() -> int:
                             header_prefix = f"Car #{cn}: " if cn > 0 else "Car: "
                             header_name = selected.instance_name[:16] if cn > 0 else selected.instance_name[:18]
                             draw_lines_fit_segmented(
-                                screen, [(header_prefix, header_name, "")], cs_x, ss1_y + 30,
+                                screen, [(header_prefix, header_name, "")], cs_x, ss1_y + session_offset,
                                 (200, 220, 255), CAR_NAME_ACCENT,
                                 max_width=cs_w, line_height=24, start_size=22, min_size=10,
                             )
@@ -3585,21 +3614,7 @@ def main() -> int:
                                 f"Laps: {selected.state.laps}",
                                 f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
                             ]
-                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
-                            # Draw the dropdown last so its opaque panel covers the
-                            # car stats text beneath it.
-                            stats_dropdown_rect, stats_dropdown_rows, stats_dropdown_scroll = _draw_car_stats_dropdown(
-                                screen,
-                                sim_cars,
-                                stats_view_index,
-                                stats_dropdown_open,
-                                stats_dropdown_scroll,
-                                cs_x,
-                                ss1_y,
-                                cs_w,
-                                bottom_pane,
-                                pygame.mouse.get_pos(),
-                            )
+                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + session_offset + 28, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
                 else:
                     # Render car stats without race stats - repositioned
                     if show_bottom_car_stats and sim_cars:
@@ -3612,7 +3627,7 @@ def main() -> int:
                             header_prefix = f"Car #{cn}: " if cn > 0 else "Car: "
                             header_name = selected.instance_name[:16] if cn > 0 else selected.instance_name[:18]
                             draw_lines_fit_segmented(
-                                screen, [(header_prefix, header_name, "")], cs_x, ss1_y + 30,
+                                screen, [(header_prefix, header_name, "")], cs_x, ss1_y + session_offset,
                                 (200, 220, 255), CAR_NAME_ACCENT,
                                 max_width=cs_w, line_height=24, start_size=22, min_size=10,
                             )
@@ -3625,25 +3640,15 @@ def main() -> int:
                                 f"Laps: {selected.state.laps}",
                                 f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
                             ]
-                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
-                            # Draw the dropdown last so its opaque panel covers the
-                            # car stats text beneath it.
-                            stats_dropdown_rect, stats_dropdown_rows, stats_dropdown_scroll = _draw_car_stats_dropdown(
-                                screen,
-                                sim_cars,
-                                stats_view_index,
-                                stats_dropdown_open,
-                                stats_dropdown_scroll,
-                                cs_x,
-                                ss1_y,
-                                cs_w,
-                                bottom_pane,
-                                pygame.mouse.get_pos(),
-                            )
+                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + session_offset + 28, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
 
         if racing and not paused and track is not None and sim_cars:
             all_stopped = True
             for idx, entry in enumerate(sim_cars):
+                # During qualifying, skip cars not of the active type.
+                if session_active and session_qualifying and session_active_car_ids:
+                    if id(entry) not in session_active_car_ids:
+                        continue
                 state = entry.state
                 car = entry.config
                 # Leader line-offset freeze removed: all cars continue adapting.
@@ -3662,6 +3667,8 @@ def main() -> int:
                     )
                     for j, other in enumerate(sim_cars)
                     if j != idx
+                    and not (session_active and session_qualifying and session_active_car_ids
+                             and id(other) not in session_active_car_ids)
                 ]
 
                 entry.vision_matrix = _build_vision_matrix(state, car, track, entry.route_plan, traffic)
@@ -3993,7 +4000,7 @@ def main() -> int:
 
                 if state.laps > prev_laps:
                     # Lap-limit completion tracking for series races.
-                    if not entry.completed_lap_limit and state.state != "crashed" and state.laps >= series_lap_limit:
+                    if not entry.completed_lap_limit and state.state != "crashed" and state.laps >= (qualifying_laps if session_active and session_qualifying else series_lap_limit):
                         entry.completed_lap_limit = True
                         entry.finish_time = entry.race_elapsed
                     prev_best_lap = entry.best_lap_seconds
@@ -4070,16 +4077,34 @@ def main() -> int:
                 racing = False
                 if infinite_mode:
                     message = "All cars wrecked. Starting next race..."
+                elif session_active and session_qualifying:
+                    message = f"All cars wrecked during qualifying ({session_qualifying_active_type})."
+                    # Treat as completed so session advances (no points for no finishers).
                 else:
                     message = "All cars are crashed/stopped. Press N to restart."
-            elif series_active or infinite_mode or (training_active and series_lap_limit > 0):
-                unwrecked = [entry for entry in sim_cars if entry.state.state != "crashed"]
+            elif series_active or infinite_mode or (training_active and series_lap_limit > 0) or session_active:
+                if session_active and session_qualifying:
+                    # Use active cars only and qualifying lap limit.
+                    active_cars = [entry for entry in sim_cars
+                                   if id(entry) in session_active_car_ids]
+                    unwrecked = [entry for entry in active_cars if entry.state.state != "crashed"]
+                    limit = qualifying_laps
+                else:
+                    unwrecked = [entry for entry in sim_cars if entry.state.state != "crashed"]
+                    limit = series_lap_limit
                 if unwrecked and all(entry.completed_lap_limit for entry in unwrecked):
                     racing = False
-                    message = f"Race complete: lap limit of {series_lap_limit} reached."
+                    if session_active and session_qualifying:
+                        message = f"Qualifying race complete ({session_qualifying_active_type}): lap limit of {limit} reached."
+                    else:
+                        message = f"Race complete: lap limit of {limit} reached."
 
         if not racing and not race_outcome_saved and sim_cars:
-            for entry in sim_cars:
+            # During qualifying, only process active-type cars.
+            cars_to_process = sim_cars
+            if session_active and session_qualifying and session_active_car_ids:
+                cars_to_process = [entry for entry in sim_cars if id(entry) in session_active_car_ids]
+            for entry in cars_to_process:
                 _finalize_race_outcome(entry)
             if decision_logger is not None:
                 decision_logger.write_summary()
@@ -4089,20 +4114,83 @@ def main() -> int:
             if training_active:
                 training_completed_races += 1
                 _save_car_learning(sim_cars, logs_dir, track.name or "")
-            # Award series points if series is active.
-            if series_active or infinite_mode:
+            # Award series points if series is active, infinite, or session mode.
+            if series_active or infinite_mode or session_active:
                 series_race_number += 1
-                _award_series_points(sim_cars, series_race_number)
+                _award_series_points(cars_to_process, series_race_number)
                 series_completed_races += 1
-                if series_active and series_race_target > 0 and series_completed_races >= series_race_target:
+                # Session mode qualifying: reorder grid for the current type.
+                if session_active and session_qualifying:
+                    # Find the current type's cars and compute finished order.
+                    for tname, type_cars in session_type_order:
+                        if tname == session_qualifying_active_type:
+                            finished_order = sorted(
+                                type_cars,
+                                key=lambda c: (
+                                    -1 if c.completed_lap_limit else 0,
+                                    c.finish_time if c.completed_lap_limit else -c.state.net_progress,
+                                ),
+                            )
+                            _reorder_grid_for_qualifying(type_cars, finished_order)
+                            break
+                    session_qualifying_count += 1
+                elif series_active and series_race_target > 0 and series_completed_races >= series_race_target:
                     series_active = False
                     infinite_mode = False
-                    # Determine series winner.
                     winner = max(sim_cars, key=lambda e: e.series_stats.points) if sim_cars else None
                     if winner is not None:
                         message = f"Series complete! Winner: {winner.instance_name} ({winner.series_stats.points} pts)"
                     else:
                         message = "Series complete!"
+
+            # Session mode advancement after race outcome.
+            if session_active and race_outcome_saved:
+                if session_qualifying and not racing:
+                    # Qualifying race finished or all wrecked. Check for skip (single-car type).
+                    if session_skip_qualifying:
+                        # Single-car type handled here later via the loop below.
+                        pass
+                    if session_qualifying_count >= session_qualifying_total:
+                        # All qualifying races done. Transition to main series.
+                        session_qualifying = False
+                        session_main_race_count = 0
+                        session_active_car_ids = set()
+                        message = "Qualifying complete. Starting main series..."
+                        # Start first main series race immediately (resets all cars).
+                        if start_race_session(training=False):
+                            session_main_race_count = 1
+                            total_str = str(series_race_target) if series_race_target > 0 else "∞"
+                            message = f"Main series race {session_main_race_count}/{total_str}."
+                    else:
+                        # Start next qualifying race.
+                        tname, type_cars = session_type_order[session_qualifying_count]
+                        session_qualifying_active_type = tname
+                        id_set = {id(c) for c in type_cars}
+                        session_active_car_ids = id_set
+                        session_skip_qualifying = len(type_cars) < 2
+                        if session_skip_qualifying:
+                            # Single-car type: skip race, reorder (no-op), increment.
+                            session_qualifying_count += 1
+                            # Recurse via the next loop iteration.
+                        else:
+                            if start_race_session(training=False):
+                                message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({tname})."
+                elif not session_qualifying and session_main_race_count >= 0:
+                    # Main series race completed.
+                    session_main_race_count += 1
+                    if session_mode and series_race_target > 0 and session_main_race_count >= series_race_target:
+                        session_active = False
+                        session_main_race_count = 0
+                        winner = max(sim_cars, key=lambda e: e.series_stats.points) if sim_cars else None
+                        if winner is not None:
+                            message = f"Session complete! Winner: {winner.instance_name} ({winner.series_stats.points} pts)"
+                        else:
+                            message = "Session complete!"
+                    else:
+                        # Start next main series race (all cars active).
+                        session_active_car_ids = set()
+                        if start_race_session(training=False):
+                            message = f"Main series race {session_main_race_count + 1}/{series_race_target if series_race_target > 0 else '∞'}."
 
         if training_active and not racing and race_outcome_saved:
             if training_completed_races >= training_total_races:
@@ -4125,9 +4213,57 @@ def main() -> int:
             _reload_car_configs(sim_cars, cars_dir)
             start_race_session(training=False)
 
+        # Session skip-qualifying handler: advance through single-car types.
+        if session_active and session_qualifying and session_skip_qualifying and not racing:
+            # Advance past this single-car type.
+            tname, type_cars = session_type_order[session_qualifying_count]
+            # Award points: single car wins (5 pts) + 1 completion point.
+            series_race_number += 1
+            series_completed_races += 1
+            for car in type_cars:
+                car.completed_lap_limit = True
+                car.finish_time = 0.0
+            _award_series_points(type_cars, series_race_number)
+            # Reorder grid (no-op for single car, but apply consistently).
+            finished_order = list(type_cars)  # single car = car itself is winner
+            _reorder_grid_for_qualifying(type_cars, finished_order)
+            session_qualifying_count += 1
+            if session_qualifying_count >= session_qualifying_total:
+                # All qualifying done. Transition to main series.
+                session_qualifying = False
+                session_main_race_count = 0
+                session_active_car_ids = set()
+                session_skip_qualifying = False
+                message = "Qualifying complete. Starting main series..."
+                # Start first main series race immediately.
+                session_active_car_ids = set()
+                if start_race_session(training=False):
+                    session_main_race_count = 1
+                    total_str = str(series_race_target) if series_race_target > 0 else "∞"
+                    message = f"Main series race {session_main_race_count}/{total_str}."
+            else:
+                # Move to next qualifying type.
+                next_tname, next_type_cars = session_type_order[session_qualifying_count]
+                session_qualifying_active_type = next_tname
+                id_set = {id(c) for c in next_type_cars}
+                session_active_car_ids = id_set
+                next_skip = len(next_type_cars) < 2
+                session_skip_qualifying = next_skip
+                if next_skip:
+                    # Will advance again next iteration.
+                    message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({next_tname}): 1 car, skipping."
+                else:
+                    session_skip_qualifying = False
+                    if start_race_session(training=False):
+                        message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({next_tname})."
+
         if not training_active:
             _draw_podium_rings(screen, sim_cars, track_transform)
             for idx, entry in enumerate(sim_cars):
+                # During qualifying, skip rendering non-active type cars.
+                if session_active and session_qualifying and session_active_car_ids:
+                    if id(entry) not in session_active_car_ids:
+                        continue
                 draw_car(screen, entry.state, entry.config, track_transform)
                 if entry.state.state == "crashed":
                     if crash_overlay is not None:
