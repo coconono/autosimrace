@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 from datetime import datetime
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -53,6 +54,12 @@ from src.common.ui import (
 # Bright standout color used for car-name text embedded in HUD/stats lines so
 # names are distinguishable from the surrounding gray statistic text.
 CAR_NAME_ACCENT = (255, 200, 60)
+
+# Pane palette — matches the loading-screen look: black background, grass-green
+# text.  CAR_NAME_ACCENT (gold) is kept for car-name segments.
+PANE_BG = (0, 0, 0)
+PANE_BORDER = (42, 145, 75)
+PANE_TEXT = (42, 145, 75)
 
 # Gold / silver / bronze used to outline the current 1st / 2nd / 3rd place cars
 # on the track pane (a podium "glow" ring around each leader).
@@ -2748,6 +2755,10 @@ def main() -> int:
     # mode. Kept separately from infinite_mode so the series-points / all-wreck
     # paths don't treat the training phase as live racing.
     pending_infinite = False
+    # Armed when a "train-first" auto-start is requested alongside session_mode:
+    # training runs first and, once training_races complete, the main loop hands
+    # off into session mode (qualifying + main series).
+    pending_session = False
 
     pygame.init()
     screen = pygame.display.set_mode((width, height))
@@ -2836,6 +2847,16 @@ def main() -> int:
     drag_offset = (0.0, 0.0)
     _next_car_number = 1
 
+    # Loading screen state for session mode transitions.
+    loading_screen_active: bool = False
+    loading_screen_text: str = ""
+    loading_screen_start_time: float = 0.0
+    loading_screen_fading: bool = False
+    loading_screen_fade_start: float = 0.0
+    MIN_LOADING_SECONDS: float = 3.0
+    FADE_DURATION: float = 0.5
+    pending_race_start: bool = False
+
     menus = [
         ("Start", ["Load Track", "Load Car", "Remove Selected Car", "Optimize", "Save Track", "Quit"]),
         ("Race", ["Start Race", "Simulate", "Start Series", "Session Mode", "Pause/Resume", "Reset Cars", "+ Waypoint", "- Waypoint", "Quit Race"]),
@@ -2854,6 +2875,33 @@ def main() -> int:
         else:
             selected_car_index = min(selected_car_index, len(sim_cars) - 1)
         message = f"Removed car {removed_name}."
+
+    def _loading_surface(text: str, w: int, h: int) -> pygame.Surface:
+        """Create a black-background loading surface with centered bold green text
+        (with per-pixel alpha so it can be used in the fade-out transition)."""
+        surf = pygame.Surface((w, h), pygame.SRCALPHA)
+        surf.fill((0, 0, 0))
+        if text:
+            font = create_default_font(48)
+            text_surf = font.render(text, True, (42, 145, 75))
+            tx = (w - text_surf.get_width()) // 2
+            ty = (h - text_surf.get_height()) // 2
+            surf.blit(text_surf, (tx, ty))
+        return surf
+
+    def _draw_loading_screen(text: str) -> None:
+        """Fill the entire screen with the loading overlay (black + bold green text)."""
+        screen.fill((0, 0, 0))
+        if text:
+            font = create_default_font(48)
+            text_surf = font.render(text, True, (42, 145, 75))
+            if asr_streaming and stream_show_panes:
+                tx = track_pane.x + (track_pane.width - text_surf.get_width()) // 2
+                ty = track_pane.y + (track_pane.height - text_surf.get_height()) // 2
+            else:
+                tx = (width - text_surf.get_width()) // 2
+                ty = (height - text_surf.get_height()) // 2
+            screen.blit(text_surf, (tx, ty))
 
     def _personalize_route(route_plan: CarRoutePlan, car_index: int) -> None:
         """Apply a per-car lateral offset so fresh/generated routes are unique."""
@@ -3061,7 +3109,55 @@ def main() -> int:
             series_active = False
             series_completed_races = 0
             series_race_number = 0
-            if train_first_requested:
+
+            if session_mode and train_first_requested:
+                # Train-first session mode: run training/simulate phase first,
+                # then hand off into session mode (qualifying + main series).
+                training_total_races = training_race_target
+                training_completed_races = 0
+                training_active = True
+                infinite_mode = False
+                pending_infinite = False
+                pending_session = True
+                if not start_race_session(training=True):
+                    training_active = False
+                    pending_session = False
+                else:
+                    message = (
+                        f"Train-first started: running {training_total_races} training "
+                        "races, then session mode."
+                    )
+            elif session_mode:
+                # Session mode auto-start: qualifying + main series.
+                # Mirrors the "Race -> Session Mode" menu action (lines 3361-3392).
+                type_order = _group_cars_by_type(sim_cars)
+                session_type_order = [
+                    (tname, tcars)
+                    for tname, tcars in type_order
+                    for _ in range(qualifying_races)
+                ]
+                session_qualifying_total = len(session_type_order)
+                session_qualifying_count = 0
+                session_qualifying = True
+                session_active = True
+                session_main_race_count = 0
+                session_qualifying_active_type = ""
+                if session_type_order:
+                    tname, type_cars = session_type_order[0]
+                    session_qualifying_active_type = tname
+                    session_qualifying_count = 0
+                    id_set = {id(c) for c in type_cars}
+                    session_active_car_ids = id_set
+                    session_skip_qualifying = len(type_cars) < 2
+                    if session_skip_qualifying:
+                        message = f"Session mode auto-started: {tname} has 1 car, skipping qualifying."
+                    else:
+                        loading_screen_text = f"Qualifying 1/{session_qualifying_total} — Type: {tname}"
+                        loading_screen_active = True
+                        loading_screen_start_time = time.time()
+                        pending_race_start = True
+                        message = f"Session mode auto-started: Qualifying 1/{session_qualifying_total} ({tname})."
+            elif train_first_requested:
                 # Start in training mode; infinite is armed (pending_infinite) and
                 # the loop hands off into infinite mode when training completes.
                 training_total_races = training_race_target
@@ -3124,6 +3220,14 @@ def main() -> int:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            # Loading screen phase: only check for early dismiss, block everything else.
+            if loading_screen_active:
+                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
+                    if time.time() - loading_screen_start_time >= MIN_LOADING_SECONDS:
+                        loading_screen_active = False
+                        loading_screen_fading = True
+                        loading_screen_fade_start = time.time()
+                continue  # skip all other event processing
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     running = False
@@ -3343,8 +3447,11 @@ def main() -> int:
                                             # Single-car type: no race needed.
                                             message = f"Session: {tname} has 1 car, skipping qualifying."
                                         else:
-                                            if start_race_session(training=False):
-                                                message = f"Session started: Qualifying 1/{session_qualifying_total} ({tname})."
+                                            loading_screen_text = f"Qualifying 1/{session_qualifying_total} — Type: {tname}"
+                                            loading_screen_active = True
+                                            loading_screen_start_time = time.time()
+                                            pending_race_start = True
+                                            message = f"Session started: Qualifying 1/{session_qualifying_total} ({tname})."
                                 else:
                                     # Legacy infinite mode.
                                     infinite_mode = True
@@ -3411,6 +3518,47 @@ def main() -> int:
             elif event.type == pygame.MOUSEWHEEL:
                 pass
 
+        # Loading screen phase: skip all physics and rendering beyond the overlay.
+        if loading_screen_active:
+            # Auto-dismiss if minimum hold time has elapsed.
+            if time.time() - loading_screen_start_time >= MIN_LOADING_SECONDS:
+                loading_screen_active = False
+                loading_screen_fading = True
+                loading_screen_fade_start = time.time()
+            _draw_loading_screen(loading_screen_text)
+            pygame.display.flip()
+            clock.tick(render_target)
+            if streamer is not None:
+                if stream_show_panes:
+                    # Ship only the track pane region — the HUD compositor expects
+                    # consistent-size frames matching the normal rendering path.
+                    raw = pygame.image.tobytes(screen.subsurface(track_pane), "RGBA")
+                else:
+                    # Pure fullscreen: handle capture downscale the same as
+                    # the normal path so frame sizes are always consistent.
+                    if capture_width != width or capture_height != height:
+                        scaled = pygame.transform.smoothscale(
+                            screen, (capture_width, capture_height)
+                        )
+                        raw = pygame.image.tobytes(scaled, "RGBA")
+                    else:
+                        raw = pygame.image.tobytes(screen, "RGBA")
+                streamer.push(raw)
+            # Signal the HUD compositor to hide chrome during loading.
+            if hud_sender is not None:
+                loading_snapshot = {
+                    "loading": True,
+                    "series_name": "",
+                    "series_completed_races": 0,
+                    "series_race_target": 0,
+                    "cars": [],
+                }
+                lsig = stream_chrome_signature(loading_snapshot)
+                if lsig != hud_sig_prev:
+                    hud_sender.send(loading_snapshot)
+                    hud_sig_prev = lsig
+            continue
+
         # Pane-based layout: dark background, track in its own pane, leaderboard
         # side pane, and bottom stats pane.
         screen.fill((18, 24, 32))
@@ -3432,9 +3580,9 @@ def main() -> int:
                 # Reset clickable rects each frame.
                 leaderboard_car_rects = []
                 # Leaderboard side pane.
-                pygame.draw.rect(screen, (24, 28, 34), leaderboard_pane)
-                pygame.draw.rect(screen, (60, 70, 86), leaderboard_pane, width=1)
-                draw_lines(screen, font, ["Leaderboard"], leaderboard_pane.x + 10, leaderboard_pane.y + 8, (235, 235, 235))
+                pygame.draw.rect(screen, PANE_BG, leaderboard_pane)
+                pygame.draw.rect(screen, PANE_BORDER, leaderboard_pane, width=1)
+                draw_lines(screen, font, ["Leaderboard"], leaderboard_pane.x + 10, leaderboard_pane.y + 8, PANE_TEXT)
                 if sim_cars:
                     display_cars = sim_cars
                     if session_active and session_qualifying and session_active_car_ids:
@@ -3456,7 +3604,7 @@ def main() -> int:
                     draw_lines_fit_segmented(
                         screen, lb_segments,
                         leaderboard_pane.x + 8, lb_y,
-                        (235, 235, 235),
+                        PANE_TEXT,
                         CAR_NAME_ACCENT,
                         max_width=leaderboard_pane.width - 16,
                         line_height=22, start_size=18, min_size=10,
@@ -3478,8 +3626,8 @@ def main() -> int:
                         leaderboard_car_rects.append((orig_idx, row_rect))
 
                 # Bottom stats pane background.
-                pygame.draw.rect(screen, (24, 28, 34), bottom_pane)
-                pygame.draw.rect(screen, (60, 70, 86), bottom_pane, width=1)
+                pygame.draw.rect(screen, PANE_BG, bottom_pane)
+                pygame.draw.rect(screen, PANE_BORDER, bottom_pane, width=1)
 
                 # Series stats 1 (left section of bottom pane).
                 ss1_x = bottom_pane.x + 10
@@ -3496,9 +3644,9 @@ def main() -> int:
                         session_line = f"Session: Main Race {session_main_race_count}"
                     else:
                         session_line = "Session: Main Series"
-                    draw_lines(screen, font, [session_line], ss1_x, ss1_y, (180, 200, 255))
+                    draw_lines(screen, font, [session_line], ss1_x, ss1_y, PANE_TEXT)
                     session_offset = 24
-                draw_lines(screen, font, ["Series Stats"], ss1_x, ss1_y + session_offset, (200, 220, 255))
+                draw_lines(screen, font, ["Series Stats"], ss1_x, ss1_y + session_offset, PANE_TEXT)
                 series_segments: list[tuple[str, str, str]] = [
                     (f"Name: {series_name}" if series_name else "Name: (none)", "", ""),
                     (f"Races: {series_completed_races}", "", ""),
@@ -3516,7 +3664,7 @@ def main() -> int:
                     series_segments.append((f"Slow: ", sr.car_name[:12], f" R{sr.race_number} {sr.lap_time:.2f}s"))
                 else:
                     series_segments.append(("Slow: --", "", ""))
-                draw_lines_fit_segmented(screen, series_segments, ss1_x, ss1_y + session_offset + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=ss1_w, line_height=20, start_size=16, min_size=10)
+                draw_lines_fit_segmented(screen, series_segments, ss1_x, ss1_y + session_offset + 28, PANE_TEXT, CAR_NAME_ACCENT, max_width=ss1_w, line_height=20, start_size=16, min_size=10)
 
                 # Series logo in series stats 1.
                 if series_logo_scaled is not None:
@@ -3526,7 +3674,7 @@ def main() -> int:
                 # Series stats 2 (top 5 points leaders).
                 ss2_x = ss1_x + ss1_w + 10
                 ss2_w = 240
-                draw_lines(screen, font, ["Points Leaders"], ss2_x, ss1_y + session_offset, (200, 220, 255))
+                draw_lines(screen, font, ["Points Leaders"], ss2_x, ss1_y + session_offset, PANE_TEXT)
                 if sim_cars:
                     leaders = sorted(sim_cars, key=lambda e: e.series_stats.points, reverse=True)[:5]
                     pl_y = ss1_y + session_offset + 28
@@ -3537,13 +3685,13 @@ def main() -> int:
                         name = entry.instance_name[:12] if cn > 0 else entry.instance_name[:14]
                         suffix = f" - {entry.series_stats.points}pts"
                         pl_segments.append((prefix, name, suffix))
-                    draw_lines_fit_segmented(screen, pl_segments, ss2_x, pl_y, (225, 225, 225), CAR_NAME_ACCENT, max_width=ss2_w, line_height=20, start_size=16, min_size=10)
+                    draw_lines_fit_segmented(screen, pl_segments, ss2_x, pl_y, PANE_TEXT, CAR_NAME_ACCENT, max_width=ss2_w, line_height=20, start_size=16, min_size=10)
 
                 # Race stats 1.
                 if show_bottom_race_stats:
                     rs1_x = ss2_x + ss2_w + 10
                     rs1_w = 260
-                    draw_lines(screen, font, ["Race Stats"], rs1_x, ss1_y + session_offset, (200, 220, 255))
+                    draw_lines(screen, font, ["Race Stats"], rs1_x, ss1_y + session_offset, PANE_TEXT)
                     leader_entry = max(sim_cars, key=lambda e: e.state.net_progress) if sim_cars else None
                     top_speed_entry = max(sim_cars, key=lambda e: e.max_race_speed) if sim_cars else None
                     leader_laps = max((e.state.laps for e in sim_cars), default=0)
@@ -3566,12 +3714,12 @@ def main() -> int:
                         race1_segments.append((f"Slow: {worst[1]:.2f}s (", worst[0][:10], ")"))
                     else:
                         race1_segments.append(("Slow: --", "", ""))
-                    draw_lines_fit_segmented(screen, race1_segments, rs1_x, ss1_y + session_offset + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=rs1_w, line_height=20, start_size=16, min_size=10)
+                    draw_lines_fit_segmented(screen, race1_segments, rs1_x, ss1_y + session_offset + 28, PANE_TEXT, CAR_NAME_ACCENT, max_width=rs1_w, line_height=20, start_size=16, min_size=10)
 
                     # Race stats 2 (drift, crash, contact).
                     rs2_x = rs1_x + rs1_w + 10
                     rs2_w = 280
-                    draw_lines(screen, font, ["Race Stats 2"], rs2_x, ss1_y + session_offset, (200, 220, 255))
+                    draw_lines(screen, font, ["Race Stats 2"], rs2_x, ss1_y + session_offset, PANE_TEXT)
                     drift_car = max(sim_cars, key=lambda e: e.max_drift_duration) if sim_cars else None
                     crash_car = min((e for e in sim_cars if e.first_crash_time is not None), key=lambda e: e.first_crash_time, default=None) if sim_cars else None
                     contact_car = max((e for e in sim_cars if e.last_contact_time is not None), key=lambda e: e.last_contact_time, default=None) if sim_cars else None
@@ -3588,7 +3736,7 @@ def main() -> int:
                         race2_segments.append(("Last Contact: ", contact_car.instance_name[:12], f" {contact_car.last_contact_time:.1f}s"))
                     else:
                         race2_segments.append(("Last Contact: --", "", ""))
-                    draw_lines_fit_segmented(screen, race2_segments, rs2_x, ss1_y + session_offset + 28, (225, 225, 225), CAR_NAME_ACCENT, max_width=rs2_w, line_height=20, start_size=16, min_size=10)
+                    draw_lines_fit_segmented(screen, race2_segments, rs2_x, ss1_y + session_offset + 28, PANE_TEXT, CAR_NAME_ACCENT, max_width=rs2_w, line_height=20, start_size=16, min_size=10)
 
                     # Car stats pane (right section of bottom pane).
                     if show_bottom_car_stats and sim_cars:
@@ -3602,7 +3750,7 @@ def main() -> int:
                             header_name = selected.instance_name[:16] if cn > 0 else selected.instance_name[:18]
                             draw_lines_fit_segmented(
                                 screen, [(header_prefix, header_name, "")], cs_x, ss1_y + session_offset,
-                                (200, 220, 255), CAR_NAME_ACCENT,
+                                PANE_TEXT, CAR_NAME_ACCENT,
                                 max_width=cs_w, line_height=24, start_size=22, min_size=10,
                             )
                             car_lines = [
@@ -3614,7 +3762,7 @@ def main() -> int:
                                 f"Laps: {selected.state.laps}",
                                 f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
                             ]
-                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + session_offset + 28, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
+                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + session_offset + 28, PANE_TEXT, max_width=cs_w, line_height=20, start_size=16, min_size=10)
                 else:
                     # Render car stats without race stats - repositioned
                     if show_bottom_car_stats and sim_cars:
@@ -3628,7 +3776,7 @@ def main() -> int:
                             header_name = selected.instance_name[:16] if cn > 0 else selected.instance_name[:18]
                             draw_lines_fit_segmented(
                                 screen, [(header_prefix, header_name, "")], cs_x, ss1_y + session_offset,
-                                (200, 220, 255), CAR_NAME_ACCENT,
+                                PANE_TEXT, CAR_NAME_ACCENT,
                                 max_width=cs_w, line_height=24, start_size=22, min_size=10,
                             )
                             car_lines = [
@@ -3640,7 +3788,7 @@ def main() -> int:
                                 f"Laps: {selected.state.laps}",
                                 f"Best: {selected.best_lap_seconds:.2f}s" if selected.best_lap_seconds > 0 else "Best: --",
                             ]
-                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + session_offset + 28, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
+                            draw_lines_fit(screen, car_lines, cs_x, ss1_y + session_offset + 28, PANE_TEXT, max_width=cs_w, line_height=20, start_size=16, min_size=10)
 
         if racing and not paused and track is not None and sim_cars:
             all_stopped = True
@@ -4156,11 +4304,14 @@ def main() -> int:
                         session_main_race_count = 0
                         session_active_car_ids = set()
                         message = "Qualifying complete. Starting main series..."
-                        # Start first main series race immediately (resets all cars).
-                        if start_race_session(training=False):
-                            session_main_race_count = 1
-                            total_str = str(series_race_target) if series_race_target > 0 else "∞"
-                            message = f"Main series race {session_main_race_count}/{total_str}."
+                        # Start first main series race with loading screen.
+                        session_main_race_count = 1
+                        total_str = str(series_race_target) if series_race_target > 0 else "∞"
+                        loading_screen_text = f"Main Series Race {session_main_race_count}/{total_str}"
+                        loading_screen_active = True
+                        loading_screen_start_time = time.time()
+                        pending_race_start = True
+                        message = f"Main series race {session_main_race_count}/{total_str}."
                     else:
                         # Start next qualifying race.
                         tname, type_cars = session_type_order[session_qualifying_count]
@@ -4173,8 +4324,11 @@ def main() -> int:
                             session_qualifying_count += 1
                             # Recurse via the next loop iteration.
                         else:
-                            if start_race_session(training=False):
-                                message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({tname})."
+                            loading_screen_text = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} — Type: {tname}"
+                            loading_screen_active = True
+                            loading_screen_start_time = time.time()
+                            pending_race_start = True
+                            message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({tname})."
                 elif not session_qualifying and session_main_race_count >= 0:
                     # Main series race completed.
                     session_main_race_count += 1
@@ -4187,15 +4341,60 @@ def main() -> int:
                         else:
                             message = "Session complete!"
                     else:
-                        # Start next main series race (all cars active).
+                        # Start next main series race with loading screen.
                         session_active_car_ids = set()
-                        if start_race_session(training=False):
-                            message = f"Main series race {session_main_race_count + 1}/{series_race_target if series_race_target > 0 else '∞'}."
+                        total_str = str(series_race_target) if series_race_target > 0 else "∞"
+                        loading_screen_text = f"Main Series Race {session_main_race_count + 1}/{total_str}"
+                        loading_screen_active = True
+                        loading_screen_start_time = time.time()
+                        pending_race_start = True
+                        message = f"Main series race {session_main_race_count + 1}/{total_str}."
 
         if training_active and not racing and race_outcome_saved:
             if training_completed_races >= training_total_races:
                 training_active = False
-                if pending_infinite:
+                if pending_session:
+                    # Train-first session mode: hand off into session mode
+                    # (qualifying + main series).
+                    pending_session = False
+                    # Reset series stats that may have been set during training.
+                    for entry in sim_cars:
+                        entry.series_stats = CarSeriesStats()
+                    series_active = False
+                    series_completed_races = 0
+                    series_race_number = 0
+                    _reload_car_configs(sim_cars, cars_dir)
+                    # Enter session mode (mirrors auto-start / menu handler).
+                    type_order = _group_cars_by_type(sim_cars)
+                    session_type_order = [
+                        (tname, tcars)
+                        for tname, tcars in type_order
+                        for _ in range(qualifying_races)
+                    ]
+                    session_qualifying_total = len(session_type_order)
+                    session_qualifying_count = 0
+                    session_qualifying = True
+                    session_active = True
+                    session_main_race_count = 0
+                    session_qualifying_active_type = ""
+                    if session_type_order:
+                        tname, type_cars = session_type_order[0]
+                        session_qualifying_active_type = tname
+                        session_qualifying_count = 0
+                        id_set = {id(c) for c in type_cars}
+                        session_active_car_ids = id_set
+                        session_skip_qualifying = len(type_cars) < 2
+                        if session_skip_qualifying:
+                            message = "Training complete. Session mode: skipping qualifying (1 car)."
+                        else:
+                            loading_screen_text = f"Qualifying 1/{session_qualifying_total} — Type: {tname}"
+                            loading_screen_active = True
+                            loading_screen_start_time = time.time()
+                            pending_race_start = True
+                            message = f"Training complete. Session mode: Qualifying 1/{session_qualifying_total} ({tname})."
+                    else:
+                        message = "Training complete. No cars for session mode."
+                elif pending_infinite:
                     # Train-first: hand off into the existing infinite-mode loop
                     # (hot-reload car configs, start an unlimited race that resets
                     # on all-wreck).
@@ -4235,12 +4434,14 @@ def main() -> int:
                 session_active_car_ids = set()
                 session_skip_qualifying = False
                 message = "Qualifying complete. Starting main series..."
-                # Start first main series race immediately.
+                # Start first main series race with loading screen.
                 session_active_car_ids = set()
-                if start_race_session(training=False):
-                    session_main_race_count = 1
-                    total_str = str(series_race_target) if series_race_target > 0 else "∞"
-                    message = f"Main series race {session_main_race_count}/{total_str}."
+                total_str = str(series_race_target) if series_race_target > 0 else "∞"
+                loading_screen_text = f"Main Series Race {session_main_race_count + 1}/{total_str}"
+                loading_screen_active = True
+                loading_screen_start_time = time.time()
+                pending_race_start = True
+                message = f"Main series race {session_main_race_count}/{total_str}."
             else:
                 # Move to next qualifying type.
                 next_tname, next_type_cars = session_type_order[session_qualifying_count]
@@ -4254,8 +4455,11 @@ def main() -> int:
                     message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({next_tname}): 1 car, skipping."
                 else:
                     session_skip_qualifying = False
-                    if start_race_session(training=False):
-                        message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({next_tname})."
+                    loading_screen_text = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} — Type: {next_tname}"
+                    loading_screen_active = True
+                    loading_screen_start_time = time.time()
+                    pending_race_start = True
+                    message = f"Qualifying {session_qualifying_count + 1}/{session_qualifying_total} ({next_tname})."
 
         if not training_active:
             _draw_podium_rings(screen, sim_cars, track_transform)
@@ -4287,19 +4491,53 @@ def main() -> int:
                     _draw_selected_car_overlays(screen, entry, track_transform)
 
         if training_active:
-            panel_w = min(780, width - 120)
-            panel_h = 180
-            panel = pygame.Rect((width - panel_w) // 2, (height - panel_h) // 2, panel_w, panel_h)
-            overlay = pygame.Surface((panel.width, panel.height), pygame.SRCALPHA)
-            overlay.fill((20, 28, 36, 220))
-            screen.blit(overlay, panel.topleft)
-            pygame.draw.rect(screen, (96, 128, 156), panel, width=2)
+            # Black background + bold green text (inverted loading-screen style).
+            if asr_streaming and stream_show_panes:
+                draw_area = track_pane
+            else:
+                draw_area = pygame.Rect(0, 0, width, height)
+            pygame.draw.rect(screen, (0, 0, 0), draw_area)
+            track_transform = (1.0, 0.0, 0.0)
 
-            progress_base = training_completed_races / max(1, training_total_races)
-            if racing and training_completed_races < training_total_races:
-                progress_base += 0.5 / max(1, training_total_races)
-            progress = max(0.0, min(1.0, progress_base))
+            cx = draw_area.x + draw_area.width // 2
+            y_pos = draw_area.y + 30
+            line_h = 36
+            small_h = 26
 
+            # Title
+            tf = create_default_font(48)
+            title_surf = tf.render("Training Simulation", True, (42, 145, 75))
+            tx = cx - title_surf.get_width() // 2
+            screen.blit(title_surf, (tx, y_pos))
+            y_pos += 55
+
+            # Stage line (which race)
+            sf = create_default_font(28)
+            stage_line = (
+                f"Running race {training_completed_races + 1}/{training_total_races}"
+                if racing
+                else f"Completed {training_completed_races}/{training_total_races}"
+            )
+            stage_surf = sf.render(stage_line, True, (42, 145, 75))
+            tx = cx - stage_surf.get_width() // 2
+            screen.blit(stage_surf, (tx, y_pos))
+            y_pos += line_h
+
+            # Speed
+            speed_line = f"Speed: {training_speed_multiplier:.0f}x"
+            speed_surf = sf.render(speed_line, True, (42, 145, 75))
+            tx = cx - speed_surf.get_width() // 2
+            screen.blit(speed_surf, (tx, y_pos))
+            y_pos += line_h
+
+            # Progress
+            prog_line = f"Progress: {training_completed_races}/{training_total_races} races"
+            prog_surf = sf.render(prog_line, True, (42, 145, 75))
+            tx = cx - prog_surf.get_width() // 2
+            screen.blit(prog_surf, (tx, y_pos))
+            y_pos += line_h
+
+            # Lap spread
             all_best_laps = [
                 outcome.best_lap_seconds
                 for entry in sim_cars
@@ -4310,7 +4548,12 @@ def main() -> int:
             if len(all_best_laps) >= 2:
                 spread = max(all_best_laps) - min(all_best_laps)
                 lap_spread_line = f"Best Lap Spread: {spread:.2f}s"
+            spread_surf = sf.render(lap_spread_line, True, (42, 145, 75))
+            tx = cx - spread_surf.get_width() // 2
+            screen.blit(spread_surf, (tx, y_pos))
+            y_pos += line_h
 
+            # Track-stay stats
             avg_clean = 0.0
             avg_offtrack_per_lap = 0.0
             _n_cars = max(1, len(sim_cars))
@@ -4320,29 +4563,28 @@ def main() -> int:
                 avg_offtrack_per_lap += entry.cum_offtrack / _laps
             avg_clean /= _n_cars
             avg_offtrack_per_lap /= _n_cars
+            trackstay_line = f"Track-stay: {avg_clean * 100.0:.0f}% clean  {avg_offtrack_per_lap:.2f} off-track/lap"
+            ts_surf = sf.render(trackstay_line, True, (42, 145, 75))
+            tx = cx - ts_surf.get_width() // 2
+            screen.blit(ts_surf, (tx, y_pos))
+            y_pos += small_h
 
-            bar_rect = pygame.Rect(panel.x + 24, panel.y + panel.height - 56, panel.width - 48, 20)
-            pygame.draw.rect(screen, (44, 54, 68), bar_rect, border_radius=4)
+            # Progress bar (styled for black background).
+            progress_base = training_completed_races / max(1, training_total_races)
+            if racing and training_completed_races < training_total_races:
+                progress_base += 0.5 / max(1, training_total_races)
+            progress = max(0.0, min(1.0, progress_base))
+            bar_w = min(400, draw_area.width - 80)
+            bar_h = 22
+            bar_x = cx - bar_w // 2
+            bar_y = y_pos
+            bar_rect = pygame.Rect(bar_x, bar_y, bar_w, bar_h)
+            pygame.draw.rect(screen, (42, 145, 75), bar_rect, border_radius=4)
             fill_w = int(bar_rect.width * progress)
             if fill_w > 0:
                 fill_rect = pygame.Rect(bar_rect.x, bar_rect.y, fill_w, bar_rect.height)
-                pygame.draw.rect(screen, (88, 188, 130), fill_rect, border_radius=4)
-            pygame.draw.rect(screen, (116, 136, 156), bar_rect, width=1, border_radius=4)
-
-            stage_line = (
-                f"Running race {training_completed_races + 1}/{training_total_races}"
-                if racing
-                else f"Completed {training_completed_races}/{training_total_races}"
-            )
-            overlay_lines = [
-                "Training Simulation",
-                stage_line,
-                f"Speed: {training_speed_multiplier:.0f}x",
-                f"Progress: {training_completed_races}/{training_total_races} races",
-                lap_spread_line,
-                f"Track-stay: {avg_clean * 100.0:.0f}% clean  {avg_offtrack_per_lap:.2f} off-track/lap",
-            ]
-            draw_lines(screen, font, overlay_lines, panel.x + 24, panel.y + 20, (232, 240, 246))
+                pygame.draw.rect(screen, (0, 0, 0), fill_rect, border_radius=4)
+            pygame.draw.rect(screen, (42, 145, 75), bar_rect, width=2, border_radius=4)
 
         if not asr_streaming:
             draw_lines(screen, font, [message], 24, height - 40, (245, 245, 245))
@@ -4365,13 +4607,42 @@ def main() -> int:
                 pygame.mouse.get_pos(),
             )
         if hud_sender is not None:
-            snapshot = build_hud_snapshot(sim_cars, series_name, series_completed_races, series_race_target)
-            sig = stream_chrome_signature(snapshot)
-            if sig != hud_sig_prev:
-                hud_sender.send(snapshot)
-                hud_sig_prev = sig
+            if training_active:
+                # During training/simulation, suppress chrome: send a loading-style
+                # snapshot so the HUD compositor fills leaderboard + bottom-stats
+                # with black (matches the inverted training screen background).
+                _tr_sig = stream_chrome_signature({"loading": True, "series_name": "", "series_completed_races": 0, "series_race_target": 0, "cars": []})
+                if _tr_sig != hud_sig_prev:
+                    hud_sender.send({"loading": True, "series_name": "", "series_completed_races": 0, "series_race_target": 0, "cars": []})
+                    hud_sig_prev = _tr_sig
+            else:
+                snapshot = build_hud_snapshot(sim_cars, series_name, series_completed_races, series_race_target)
+                sig = stream_chrome_signature(snapshot)
+                if sig != hud_sig_prev:
+                    hud_sender.send(snapshot)
+                    hud_sig_prev = sig
+        # Fade-out transition: overlay the loading surface at decreasing alpha.
+        if loading_screen_fading:
+            elapsed = time.time() - loading_screen_fade_start
+            alpha = max(0, 255.0 * (1.0 - elapsed / FADE_DURATION))
+            if alpha <= 0:
+                loading_screen_fading = False
+            else:
+                if asr_streaming and stream_show_panes:
+                    fade_surface = _loading_surface(loading_screen_text, track_pane.width, track_pane.height)
+                    fade_surface.set_alpha(int(alpha))
+                    screen.blit(fade_surface, track_pane.topleft)
+                else:
+                    fade_surface = _loading_surface(loading_screen_text, width, height)
+                    fade_surface.set_alpha(int(alpha))
+                    screen.blit(fade_surface, (0, 0))
         pygame.display.flip()
         clock.tick(render_target)
+
+        # Deferred race start: after loading screen and fade are both done.
+        if pending_race_start and not loading_screen_active and not loading_screen_fading:
+            pending_race_start = False
+            start_race_session(training=False)
 
         if streamer is not None:
             if stream_show_panes:

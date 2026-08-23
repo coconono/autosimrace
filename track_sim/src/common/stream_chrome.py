@@ -32,6 +32,12 @@ from src.common.ui import (
 # depend on the (interactive-centric) renderer module.
 CAR_NAME_ACCENT = (255, 200, 60)
 
+# Pane palette — matches the loading-screen look: black background, grass-green
+# text.  CAR_NAME_ACCENT (gold) is kept for car-name segments.
+PANE_BG = (0, 0, 0)
+PANE_BORDER = (42, 145, 75)
+PANE_TEXT = (42, 145, 75)
+
 
 def compute_stream_pane_layout(w: int, h: int, side_w: int, bottom_h: int):
     """Return (track, leaderboard, bottom) rects for the streaming HUD layout.
@@ -146,7 +152,18 @@ def render_stream_chrome(
     surfaces. Each surface is pane-sized and is blitted beside the track (the track pane is
     already shrunk to leave room), so the chrome never overlaps the race. Re-rendered only
     when the standings change.
+
+    When snapshot["loading"] is True, both panes are filled with black (0,0,0)
+    to seamlessly match the simulation pane background and the entire canvas
+    appears uniform during training/loading.
     """
+    if snapshot.get("loading"):
+        # Suppress chrome: fill panes with black (0,0,0) so they seamlessly
+        # match the simulation pane background during training/loading.
+        lb_surface.fill((0, 0, 0))
+        bottom_surface.fill((0, 0, 0))
+        return
+
     cars = snapshot["cars"]
     series_name = snapshot["series_name"]
     series_completed_races = snapshot["series_completed_races"]
@@ -155,9 +172,9 @@ def render_stream_chrome(
     # Small header font for the narrow/short HUD panes.
     hfont = create_default_font(12)
     # --- Leaderboard pane ---
-    lb_surface.fill((24, 28, 34))
-    pygame.draw.rect(lb_surface, (60, 70, 86), lb_surface.get_rect(), width=1)
-    draw_lines(lb_surface, hfont, ["Leaderboard"], 8, 6, (235, 235, 235))
+    lb_surface.fill(PANE_BG)
+    pygame.draw.rect(lb_surface, PANE_BORDER, lb_surface.get_rect(), width=1)
+    draw_lines(lb_surface, hfont, ["Leaderboard"], 8, 6, PANE_TEXT)
     lb_y = 34
     ordered = sorted(cars, key=lambda c: c["net_progress"], reverse=True)
     lb_segments: list[tuple[str, str, str]] = []
@@ -172,7 +189,7 @@ def render_stream_chrome(
         lb_segments,
         6,
         lb_y,
-        (235, 235, 235),
+        PANE_TEXT,
         CAR_NAME_ACCENT,
         max_width=lb_surface.get_width() - 12,
         line_height=20,
@@ -182,13 +199,13 @@ def render_stream_chrome(
 
     # --- Bottom stats pane ---
     bw = bottom_surface.get_width()
-    bottom_surface.fill((24, 28, 34))
-    pygame.draw.rect(bottom_surface, (60, 70, 86), bottom_surface.get_rect(), width=1)
+    bottom_surface.fill(PANE_BG)
+    pygame.draw.rect(bottom_surface, PANE_BORDER, bottom_surface.get_rect(), width=1)
 
     ss1_x = 10
     ss1_y = 8
     ss1_w = 300
-    draw_lines(bottom_surface, font, ["Series Stats"], ss1_x, ss1_y, (200, 220, 255))
+    draw_lines(bottom_surface, font, ["Series Stats"], ss1_x, ss1_y, PANE_TEXT)
     series_segments: list[tuple[str, str, str]] = [
         ("Name: {}".format(series_name) if series_name else "Name: (none)", "", ""),
         (
@@ -215,7 +232,7 @@ def render_stream_chrome(
         bottom_surface,
         series_segments,
         ss1_x, ss1_y + 28,
-        (225, 225, 225), CAR_NAME_ACCENT,
+        PANE_TEXT, CAR_NAME_ACCENT,
         max_width=ss1_w, line_height=20, start_size=16, min_size=10,
     )
 
@@ -227,7 +244,7 @@ def render_stream_chrome(
     # Points leaders (top 5).
     ss2_x = ss1_x + ss1_w + 10
     ss2_w = 240
-    draw_lines(bottom_surface, font, ["Points Leaders"], ss2_x, ss1_y, (200, 220, 255))
+    draw_lines(bottom_surface, font, ["Points Leaders"], ss2_x, ss1_y, PANE_TEXT)
     if cars:
         leaders = sorted(cars, key=lambda c: c["points"], reverse=True)[:5]
         pl_y = ss1_y + 28
@@ -240,14 +257,14 @@ def render_stream_chrome(
             pl_segments.append((prefix, name, suffix))
         draw_lines_fit_segmented(
             bottom_surface, pl_segments, ss2_x, pl_y,
-            (225, 225, 225), CAR_NAME_ACCENT,
+            PANE_TEXT, CAR_NAME_ACCENT,
             max_width=ss2_w, line_height=20, start_size=16, min_size=10,
         )
 
     # Race stats 1.
     rs1_x = ss2_x + ss2_w + 10
     rs1_w = 260
-    draw_lines(bottom_surface, font, ["Race Stats"], rs1_x, ss1_y, (200, 220, 255))
+    draw_lines(bottom_surface, font, ["Race Stats"], rs1_x, ss1_y, PANE_TEXT)
     leader_entry = max(cars, key=lambda c: c["net_progress"]) if cars else None
     top_speed_entry = max(cars, key=lambda c: c["max_race_speed"]) if cars else None
     leader_laps = max((c["laps"] for c in cars), default=0)
@@ -272,14 +289,14 @@ def render_stream_chrome(
         race1_segments.append(("Slow: --", "", ""))
     draw_lines_fit_segmented(
         bottom_surface, race1_segments, rs1_x, ss1_y + 28,
-        (225, 225, 225), CAR_NAME_ACCENT,
+        PANE_TEXT, CAR_NAME_ACCENT,
         max_width=rs1_w, line_height=20, start_size=16, min_size=10,
     )
 
     # Race stats 2 (drift, crash, contact).
     rs2_x = rs1_x + rs1_w + 10
     rs2_w = 280
-    draw_lines(bottom_surface, font, ["Race Stats 2"], rs2_x, ss1_y, (200, 220, 255))
+    draw_lines(bottom_surface, font, ["Race Stats 2"], rs2_x, ss1_y, PANE_TEXT)
     drift_car = max(cars, key=lambda c: c["max_drift_duration"]) if cars else None
     crashed = [c for c in cars if c["first_crash_time"] is not None]
     contacted = [c for c in cars if c["last_contact_time"] is not None]
@@ -300,7 +317,7 @@ def render_stream_chrome(
         race2_segments.append(("Last Contact: --", "", ""))
     draw_lines_fit_segmented(
         bottom_surface, race2_segments, rs2_x, ss1_y + 28,
-        (225, 225, 225), CAR_NAME_ACCENT,
+        PANE_TEXT, CAR_NAME_ACCENT,
         max_width=rs2_w, line_height=20, start_size=16, min_size=10,
     )
 
@@ -314,7 +331,7 @@ def render_stream_chrome(
         header_name = selected["instance_name"][:16] if cn > 0 else selected["instance_name"][:18]
         draw_lines_fit_segmented(
             bottom_surface, [(header_prefix, header_name, "")], cs_x, ss1_y + 30,
-            (200, 220, 255), CAR_NAME_ACCENT,
+            PANE_TEXT, CAR_NAME_ACCENT,
             max_width=cs_w, line_height=24, start_size=22, min_size=10,
         )
         car_lines = [
@@ -326,7 +343,7 @@ def render_stream_chrome(
             "Laps: {}".format(selected["laps"]),
             "Best: {:.2f}s".format(selected["best_lap_seconds"]) if selected["best_lap_seconds"] > 0 else "Best: --",
         ]
-        draw_lines_fit(bottom_surface, car_lines, cs_x, ss1_y + 58, (225, 225, 225), max_width=cs_w, line_height=20, start_size=16, min_size=10)
+        draw_lines_fit(bottom_surface, car_lines, cs_x, ss1_y + 58, PANE_TEXT, max_width=cs_w, line_height=20, start_size=16, min_size=10)
 
 
 
